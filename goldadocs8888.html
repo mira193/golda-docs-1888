@@ -351,7 +351,7 @@ function fD(v){return Number(v).toLocaleString('uk-UA',{minimumFractionDigits:2,
 function fP(v){return Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,' ').replace('.',',');}
 
 // ══════════════════════ Спільна хмарна синхронізація ══════════════════════
-const APP_URL = 'ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ'; // <-- Вставте посилання на Google Apps Script
+const APP_URL = 'https://script.google.com/macros/s/AKfycbxlwrfp1W8GyDmA4tCrzjTxfcs9wTKMCb48a9x9J8W9zbMrJzGybEs2VmlNT1JT7KHkPg/exec';
 
 function setSync(cls,txt){const d=document.getElementById('sync-dot'),t=document.getElementById('sync-txt');if(d)d.className='sync-dot'+(cls?' '+cls:'');if(t)t.textContent=txt;}
 
