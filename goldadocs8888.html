@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Рахунки та накладні — ФОП Голда</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:16px;max-width:860px;margin:0 auto}
+h1{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2c3e50;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #2c3e50}
+.sec{background:#fff;border-radius:6px;padding:14px 16px;margin-bottom:10px;border:1px solid #dde2ea}
+.st{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a96a3;margin-bottom:10px}
+.row{display:flex;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.f{display:flex;flex-direction:column;gap:3px;flex:1;min-width:60px}
+.f.w2{flex:2}.f.w3{flex:3}.f.w4{flex:4}
+label{font-size:10px;color:#8a96a3;font-weight:600}
+input,select,textarea{border:1px solid #d5dae3;border-radius:4px;padding:5px 7px;font-size:12px;color:#222;background:#fafbfc;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2c3e50}
+input[readonly]{background:#f0f2f5;color:#555}
+.num-badge{display:flex;align-items:center;justify-content:space-between;background:#e8f4fd;border:1px solid #b8d9f0;border-radius:6px;padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.num-badge .next{font-size:28px;font-weight:700;color:#1a6fa8}
+.num-badge .label{font-size:11px;color:#5a8db5;margin-bottom:2px}
+.num-edit{display:flex;align-items:center;gap:6px;font-size:11px;color:#5a8db5}
+.num-edit input{width:70px;font-size:13px;font-weight:700;text-align:center;padding:3px 5px}
+.invoice-link{background:#f0fbf4;border:1px solid #a8ddb5;border-radius:6px;padding:12px 14px;margin-bottom:10px}
+.invoice-link .st{color:#217346;margin-bottom:8px}
+.invoice-link select{font-size:13px;font-weight:600}
+.linked-badge{display:none;background:#217346;color:#fff;font-size:11px;padding:3px 8px;border-radius:4px;margin-left:8px}
+.linked-badge.show{display:inline}
+table.form-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.form-tbl th{background:#f4f6f9;font-size:10px;font-weight:700;color:#8a96a3;padding:5px;text-align:left;border-bottom:1px solid #dde2ea}
+table.form-tbl td{padding:3px;border-bottom:1px solid #f0f2f5}
+table.form-tbl td input{border:1px solid #e5e8ef;padding:3px 5px;font-size:12px;width:100%}
+.si{background:#f4f6f9!important;color:#aaa!important}
+.del{background:none;border:none;color:#ccc;font-size:15px;cursor:pointer;padding:0 3px;width:auto}
+.del:hover{color:#e74c3c}
+.badd{width:100%;margin-top:7px;padding:6px;background:none;border:1px dashed #c5ccd6;border-radius:4px;font-size:12px;color:#8a96a3;cursor:pointer}
+.badd:hover{border-color:#2c3e50;color:#2c3e50}
+.tot{display:flex;justify-content:flex-end;align-items:baseline;gap:8px;margin-top:8px}
+.totv{font-size:20px;font-weight:700;color:#2c3e50}
+.totw{font-size:11px;color:#8a96a3;text-align:right;margin-top:2px;font-style:italic}
+.btns{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.btn{padding:11px 14px;border:none;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-pdf{flex:2;background:#2c3e50;color:#fff;font-size:13px}
+.btn-pdf:hover{background:#1a252f}
+.btn-csv{background:#217346;color:#fff}
+.btn-csv:hover{background:#185c38}
+.btn-json{background:#1a6fa8;color:#fff}
+.btn-json:hover{background:#145a8a}
+.btn-import{background:#f0f2f5;color:#2c3e50;border:1px solid #d5dae3}
+.btn-import:hover{background:#e0e4ea}
+.btn-clear{background:#fdf0f0;color:#c0392b;border:1px solid #f0c0c0}
+.btn-clear:hover{background:#fce0e0}
+.btn:disabled{background:#ccc!important;color:#fff!important;border-color:#ccc!important;cursor:default}
+.contract-block{display:none;background:#fffbf0;border:1px solid #f0d890;border-radius:6px;padding:14px 16px;margin-bottom:10px}
+.contract-block.visible{display:block}
+.contract-block .st{color:#b8860b}
+table.db{width:100%;border-collapse:collapse;font-size:11px}
+table.db th{background:#f4f6f9;font-size:10px;font-weight:700;color:#8a96a3;padding:4px 6px;text-align:left;border-bottom:1px solid #dde2ea}
+table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
+.empty-db{font-size:12px;color:#aaa;text-align:center;padding:16px 0}
+.db-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.db-count{font-size:11px;color:#8a96a3}
+.bclear{font-size:10px;color:#e74c3c;background:none;border:none;cursor:pointer;padding:2px 4px}
+.bclear:hover{text-decoration:underline}
+.hint{font-size:10px;color:#8a96a3;margin-top:6px;font-style:italic}
+.info-box{background:#fff8e8;border:1px solid #f0d060;border-radius:4px;padding:8px 10px;font-size:11px;color:#856404;margin-bottom:8px}
+.discount-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.discount-row label{white-space:nowrap;margin:0}
+.discount-row input{width:100px}
+.sync-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#8a96a3;flex-wrap:wrap}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0}
+.sync-dot.ok{background:#27ae60}
+.sync-dot.busy{background:#f0ad4e;animation:pulse 1s infinite}
+.sync-dot.off{background:#e74c3c}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-txt{font-weight:600}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab-btn{flex:1;padding:12px 10px;border:1px solid #dde2ea;background:#fff;border-radius:6px;font-size:13px;font-weight:700;color:#8a96a3;cursor:pointer;text-align:center}
+.tab-btn.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Екран авторизації (ПІН-код) */
+#auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f2f5;display:flex;justify-content:center;align-items:center;z-index:99999}
+.auth-card{background:#fff;padding:24px 28px;border-radius:8px;border:1px solid #dde2ea;width:100%;max-width:320px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.auth-card h2{font-size:15px;margin-bottom:8px;color:#2c3e50}
+.auth-card p{font-size:11px;color:#8a96a3;margin-bottom:14px}
+.auth-card input{font-size:20px;letter-spacing:6px;text-align:center;padding:8px;margin-bottom:12px;font-weight:700}
+.auth-card button{width:100%;padding:10px;background:#2c3e50;color:#fff;border:none;border-radius:4px;font-weight:700;cursor:pointer}
+.auth-card button:hover{background:#1a252f}
+.auth-err{color:#e74c3c;font-size:11px;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+
+<!-- Вікно блокування -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2>Вхід у систему</h2>
+    <p>Введіть ПІН-код для доступу до накладних</p>
+    <input type="password" id="pin-input" maxlength="6" autofocus onkeypress="if(event.key==='Enter')checkPin()">
+    <button onclick="checkPin()">Увійти</button>
+    <div class="auth-err" id="auth-err">Невірний ПІН-код</div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none">
+  <h1>Рахунки та накладні · ФОП Голда Лариса Сергіївна</h1>
+
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span class="sync-txt" id="sync-txt">Підключення до бази...</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-btn-inv" onclick="switchTab('inv')">🧾 Рахунки</button>
+    <button class="tab-btn" id="tab-btn-note" onclick="switchTab('note')">📦 Накладні</button>
+  </div>
+
+  <!-- ВКЛАДКА: РАХУНКИ -->
+  <div class="tab-panel active" id="tab-inv">
+    <div class="num-badge">
+      <div>
+        <div class="label">Наступний номер рахунку</div>
+        <div class="next" id="inv-next-num">130-РД</div>
+      </div>
+      <div class="num-edit">
+        <span>Змінити останній №:</span>
+        <input type="number" id="inv-last-num-input" value="129" min="1" onchange="invSetLastNum(this.value)">
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Реквізити рахунку</div>
+      <div class="row">
+        <div class="f"><label>День</label><input id="inv-day" type="number" min="1" max="31" placeholder="1"></div>
+        <div class="f w2"><label>Місяць</label>
+          <select id="inv-mon"><option value="">— оберіть —</option>
+            <option>січня</option><option>лютого</option><option>березня</option>
+            <option>квітня</option><option>травня</option><option>червня</option>
+            <option>липня</option><option>серпня</option><option>вересня</option>
+            <option>жовтня</option><option>листопада</option><option>грудня</option>
+          </select>
+        </div>
+        <div class="f"><label>Рік</label><input id="inv-yr" value="2026"></div>
+        <div class="f w3">
+          <label>До договору № <span style="color:#b8860b;font-style:italic">(заповни — з'явиться призначення платежу)</span></label>
+          <input id="inv-ct" placeholder="необов'язково" oninput="invToggleContract()">
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Платник</div>
+      <div class="row">
+        <div class="f w4"><label>Назва</label><input id="inv-payer" placeholder="Назва платника"></div>
+        <div class="f w2"><label>РНОКПП</label><input id="inv-code" placeholder="0000000000"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Товари / послуги</div>
+      <table class="form-tbl"><thead><tr>
+        <th style="width:40%">Найменування</th><th style="width:9%">Од.</th>
+        <th style="width:8%">К-сть</th><th style="width:14%">Ціна</th>
+        <th style="width:14%">Сума</th><th style="width:15%"></th>
+      </tr></thead><tbody id="inv-tb"></tbody></table>
+      <button class="badd" onclick="invAddRow()">+ Додати позицію</button>
+
+      <div class="discount-row">
+        <label style="font-size:11px;color:#8a96a3;font-weight:600">Знижка (грн, необов'язково):</label>
+        <input type="number" id="inv-discount" min="0" step="0.01" placeholder="0" style="width:120px" oninput="invRc()">
+      </div>
+
+      <div class="tot"><span style="font-size:12px;color:#8a96a3">Разом до оплати:</span><span class="totv" id="inv-tv">0,00 грн</span></div>
+      <div class="totw" id="inv-tw"></div>
+    </div>
+
+    <div class="contract-block" id="inv-contract-block">
+      <div class="st">Призначення платежу</div>
+      <div class="row">
+        <div class="f w2">
+          <label>Відсоток завдатку (%)</label>
+          <input type="number" id="inv-deposit-pct" value="40" min="1" max="100" oninput="invUpdatePreview()">
+        </div>
+        <div class="f">
+          <label>Решта % (решта платежу)</label>
+          <input type="number" id="inv-rest-pct" value="60" min="1" max="100" readonly style="background:#f0f2f5;color:#555">
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8a96a3;margin-bottom:8px">Текст генерується автоматично. За потреби відредагуй:</div>
+      <textarea id="inv-payment-purpose" rows="5" style="font-size:11px;line-height:1.6;resize:vertical"></textarea>
+    </div>
+
+    <div class="btns">
+      <button class="btn btn-pdf" onclick="invMakePDF()">⬇ Завантажити PDF</button>
+      <button class="btn btn-csv" id="inv-bcsv" onclick="invExportCSV()" disabled>📊 Зберегти CSV</button>
+      <button class="btn btn-json" id="inv-bjson" onclick="invExportJSON()" disabled>💾 Зберегти JSON</button>
+      <label class="btn btn-import" style="cursor:pointer">📂 Завантажити базу<input type="file" id="inv-importFile" accept=".json" style="display:none" onchange="invImportDB(event)"></label>
+      <button class="btn btn-clear" onclick="invClearDB()">🗑 Очистити</button>
+    </div>
+
+    <div class="sec" style="margin-top:12px">
+      <div class="db-header">
+        <div class="st" style="margin:0">База рахунків</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="db-count" id="inv-db-count">0 записів</span>
+          <button class="bclear" onclick="invClearDB()">Очистити</button>
+        </div>
+      </div>
+      <div id="inv-db-body"><div class="empty-db">Ще немає збережених рахунків.</div></div>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА: НАКЛАДНІ -->
+  <div class="tab-panel" id="tab-note">
+    <div class="num-badge">
+      <div>
+        <div class="label">Наступний номер накладної</div>
+        <div class="next" id="note-next-num">76Д</div>
+      </div>
+      <div class="num-edit">
+        <span>Змінити останній №:</span>
+        <input type="number" id="note-last-num-input" value="75" min="1" onchange="noteSetLastNum(this.value)">
+        <span>Д</span>
+      </div>
+    </div>
+
+    <div class="invoice-link sec">
+      <div class="st">📋 Підтягнути дані з рахунку <span class="linked-badge" id="linked-badge">✓ Підтягнуто</span></div>
+      <div class="info-box" id="no-invoices-msg">Поки немає жодного рахунку.</div>
+      <div class="row" id="invoice-selector" style="display:none">
+        <div class="f w3">
+          <label>Обрати рахунок</label>
+          <select id="invoice-select" onchange="linkInvoice()">
+            <option value="">— заповнити вручну —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Реквізити накладної</div>
+      <div class="row">
+        <div class="f"><label>День</label><input id="note-day" type="number" min="1" max="31" placeholder="1"></div>
+        <div class="f w2"><label>Місяць</label>
+          <select id="note-mon"><option value="">— оберіть —</option>
+            <option>січня</option><option>лютого</option><option>березня</option>
+            <option>квітня</option><option>травня</option><option>червня</option>
+            <option>липня</option><option>серпня</option><option>вересня</option>
+            <option>жовтня</option><option>листопада</option><option>грудня</option>
+          </select>
+        </div>
+        <div class="f"><label>Рік</label><input id="note-yr" value="2026"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Покупець</div>
+      <div class="row">
+        <div class="f w4"><label>Назва покупця</label><input id="note-buyer" placeholder="Назва організації/ФОП"></div>
+        <div class="f w2"><label>Код ЄДРПОУ / РНОКПП</label><input id="note-buyer-code" placeholder="00000000"></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Товари / послуги</div>
+      <table class="form-tbl"><thead><tr>
+        <th style="width:42%">Найменування</th><th style="width:9%">Од.</th>
+        <th style="width:9%">К-сть</th><th style="width:15%">Ціна</th>
+        <th style="width:15%">Сума</th><th style="width:10%"></th>
+      </tr></thead><tbody id="note-tb"></tbody></table>
+      <button class="badd" onclick="noteAddRow()">+ Додати позицію</button>
+      <div class="tot"><span style="font-size:12px;color:#8a96a3">Загальна сума:</span><span class="totv" id="note-tv">0,00 грн</span></div>
+      <div class="totw" id="note-tw"></div>
+    </div>
+
+    <div class="btns">
+      <button class="btn btn-pdf" onclick="noteMakePDF()">⬇ Завантажити PDF</button>
+      <button class="btn btn-csv" id="note-bcsv" onclick="noteExportCSV()" disabled>📊 Зберегти CSV</button>
+      <button class="btn btn-json" id="note-bjson" onclick="noteExportJSON()" disabled>💾 Зберегти базу JSON</button>
+      <label class="btn btn-import" style="cursor:pointer">📂 Завантажити базу<input type="file" id="note-importFile" accept=".json" style="display:none" onchange="noteImportDB(event)"></label>
+      <button class="btn btn-clear" onclick="noteClearDB()">🗑 Очистити</button>
+    </div>
+
+    <div class="sec" style="margin-top:12px">
+      <div class="db-header">
+        <div class="st" style="margin:0">База накладних</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="db-count" id="note-db-count">0 записів</span>
+          <button class="bclear" onclick="noteClearDB()">Очистити</button>
+        </div>
+      </div>
+      <div id="note-db-body"><div class="empty-db">Ще немає збережених накладних.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════ АВТОРИЗАЦІЯ (ПІН-КОД) ══════════════════════
+const CORRECT_PIN = '7788'; // <-- Встановіть свій ПІН-код тут
+
+function checkPin() {
+  const enteredPin = document.getElementById('pin-input').value;
+  if (enteredPin === CORRECT_PIN) {
+    sessionStorage.setItem('golda_auth', 'ok');
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app-container').style.display = 'block';
+    cloudLoad();
+  } else {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+// Автоматичний вхід, якщо вже вводили ПІН у цій вкладці
+if (sessionStorage.getItem('golda_auth') === 'ok') {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('app-container').style.display = 'block';
+  setTimeout(cloudLoad, 50);
+}
+
+// ══════════════════════ Вкладки ══════════════════════
+function switchTab(t){
+  document.getElementById('tab-inv').classList.toggle('active',t==='inv');
+  document.getElementById('tab-note').classList.toggle('active',t==='note');
+  document.getElementById('tab-btn-inv').classList.toggle('active',t==='inv');
+  document.getElementById('tab-btn-note').classList.toggle('active',t==='note');
+}
+
+// ══════════════════════ Числа прописом ══════════════════════
+const O1=["","одна","дві","три","чотири","п'ять","шість","сім","вісім","дев'ять","десять","одинадцять","дванадцять","тринадцять","чотирнадцять","п'ятнадцять","шістнадцять","сімнадцять","вісімнадцять","дев'ятнадцять"];
+const O1m=["","один","два","три","чотири","п'ять","шість","сім","вісім","дев'ять","десять","одинадцять","дванадцять","тринадцять","чотирнадцять","п'ятнадцять","шістнадцять","сімнадцять","вісімнадцять","дев'ятнадцять"];
+const T=["","","двадцять","тридцять","сорок","п'ятдесят","шістдесят","сімдесят","вісімдесят","дев'яносто"];
+const H=["","сто","двісті","триста","чотириста","п'ятсот","шістсот","сімсот","вісімсот","дев'ятсот"];
+function ck(n,f=true){const O=f?O1:O1m;let p=[],h=Math.floor(n/100),r=n%100;if(h)p.push(H[h]);if(r<20){if(r)p.push(O[r]);}else{p.push(T[Math.floor(r/10)]);if(r%10)p.push(O[r%10]);}return p.join(' ');}
+function tho(n){const w=ck(n,true),l2=n%100,l1=n%10;const s=l2>=11&&l2<=19?'тисяч':l1===1?'тисяча':l1>=2&&l1<=4?'тисячі':'тисяч';return w+' '+s;}
+function amtP(total){
+  const tot=Math.round(total*100),h=Math.floor(tot/100),k=tot%100;
+  let hw='нуль';
+  if(h>0){const mil=Math.floor(h/1e6),th=Math.floor((h%1e6)/1000),un=h%1000;let p=[];
+    if(mil){const mw=ck(mil,false),l2=mil%100,l1=mil%10,ms=l2>=11&&l2<=19?'мільйонів':l1===1?'мільйон':l1>=2&&l1<=4?'мільйони':'мільйонів';p.push(mw+' '+ms);}
+    if(th)p.push(tho(th));if(un)p.push(ck(un,true));hw=p.join(' ')||'нуль';}
+  hw=hw.charAt(0).toUpperCase()+hw.slice(1);
+  const l2=h%100,l1=h%10,hf=l2>=11&&l2<=19?'гривень':l1===1?'гривня':l1>=2&&l1<=4?'гривні':'гривень';
+  return{hWords:hw,hForm:hf,kInt:String(k).padStart(2,'0'),kWords:k?ck(k,false):'нуль'};
+}
+function wDisp(t){const{hWords,hForm,kInt}=amtP(t);return`${hWords} ${hForm} ${kInt} коп.`;}
+function fD(v){return Number(v).toLocaleString('uk-UA',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fP(v){return Number(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,' ').replace('.',',');}
+
+// ══════════════════════ Спільна хмарна синхронізація ══════════════════════
+const APP_URL = 'ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ'; // <-- Вставте посилання на Google Apps Script
+
+function setSync(cls,txt){const d=document.getElementById('sync-dot'),t=document.getElementById('sync-txt');if(d)d.className='sync-dot'+(cls?' '+cls:'');if(t)t.textContent=txt;}
+
+let cloudSaveTimer=null;
+function cloudSave(){
+  if(!APP_URL || APP_URL === 'ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ') {
+    setSync('off', 'Вставте посилання на Google Script у код');
+    return;
+  }
+  setSync('busy','Збереження в хмару...');
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(async()=>{
+    try{
+      const data = JSON.stringify({invLastNum,invDB,noteLastNum,noteDB});
+      await fetch(APP_URL, {
+        method: 'POST',
+        body: data,
+        headers: {'Content-Type': 'text/plain;charset=utf-8'}
+      });
+      setSync('ok',`Синхронізовано з Google Диск · ${invDB.length} рахунків, ${noteDB.length} накладних`);
+    }catch(err){
+      setSync('off','Помилка збереження в хмару');
+    }
+  }, 1000);
+}
+
+async function cloudLoad(){
+  if(!APP_URL || APP_URL === 'ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ') {
+    setSync('off', 'Вставте посилання на Google Script у код');
+    invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);
+    noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);
+    noteRefreshInvoiceSelector();
+    return;
+  }
+  setSync('busy','Завантаження бази з хмари...');
+  try {
+    const response = await fetch(APP_URL);
+    const data = await response.json();
+    if (data && data.invDB) {
+      if(Array.isArray(data.invDB))invDB=data.invDB;
+      if(data.invLastNum)invLastNum=data.invLastNum;
+      if(Array.isArray(data.noteDB))noteDB=data.noteDB;
+      if(data.noteLastNum)noteLastNum=data.noteLastNum;
+    }
+    invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);
+    noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);
+    noteRefreshInvoiceSelector();
+    setSync('ok',`Синхронізовано з Google Диск · ${invDB.length} рахунків, ${noteDB.length} накладних`);
+  } catch (err) {
+    setSync('off', 'Помилка завантаження (перший запуск).');
+    invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);
+    noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);
+    noteRefreshInvoiceSelector();
+    cloudSave();
+  }
+}
+
+// ═══════════════════════ РАХУНКИ ═══════════════════════
+let invDB=[
+  {"num":"122-РД","date":"04 серпня 2026","payer":"ФОП Томишинець Василь Іванович","code":"2086503699","items":[{"name":"Піскоструминний (піскоструйний) пістолет із соплом","unit":"шт.","qty":2,"price":1900,"sum":3800}],"subtotal":3800,"discount":0,"total":3800,"contract":"","purpose":""},
+  {"num":"123-РД","date":"04 серпня 2026","payer":"________________________","code":"________________","items":[{"name":"Камера гідроабразивного очищення GA-95-AIR","unit":"шт.","qty":1,"price":168750,"sum":168750}],"subtotal":168750,"discount":0,"total":168750,"contract":"","purpose":""},
+  {"num":"124-РД","date":"06 серпня 2026","payer":"__________________________","code":"_________","items":[{"name":"Камера гідроабразивного очищення “Aquablast GA-120-JET”","unit":"шт.","qty":1,"price":213750,"sum":213750},{"name":"Система рециркуляції","unit":"шт.","qty":1,"price":20110,"sum":20110},{"name":"Рукавички з підкладкою","unit":"шт.","qty":1,"price":1118,"sum":1118}],"subtotal":234978,"discount":0,"total":234978,"contract":"84","purpose":"Призначення платежу:\nЗавдаток у розмірі 40% від загальної вартості обладнання\nза Договором купівлі продажу №84 від 06 серпня 2026 року\nЗагальна вартість договору - 234 978,00 грн\nСума завдатку (40%) - 93 991,20 грн\nРешта 60% (140 986,80 грн) сплачується після закінчення виготовлення обладнання"},
+  {"num":"125-РД","date":"6 серпня 2026","payer":"__________________________________","code":"___________","items":[{"name":"Камера гідроабразивного очищення “Aquablast GA-120-JET”","unit":"шт.","qty":1,"price":213750,"sum":213750},{"name":"Система рециркуляції","unit":"шт.","qty":1,"price":20110,"sum":20110},{"name":"Рукавички з підкладкою","unit":"шт.","qty":1,"price":1118,"sum":1118}],"subtotal":234978,"discount":0,"total":234978,"contract":"85","purpose":"Призначення платежу:\nЗавдаток у розмірі 40% від загальної вартості обладнання\nза Договором купівлі продажу №85 від 6 серпня 2026 року\nЗагальна вартість договору - 234 978,00 грн\nСума завдатку (40%) - 93 991,20 грн\nРешта 60% (140 986,80 грн) сплачується після закінчення виготовлення обладнання"},
+  {"num":"127-РД","date":"18 серпня 2026","payer":"ФОП Жукова Ольга Олександрівна","code":"3198318846","items":[{"name":"Гумові рукавички (підсилені) для піскоструминних камер і аквабластингу, 680мм","unit":"шт.","qty":2,"price":1590,"sum":3180}],"subtotal":3180,"discount":0,"total":3180,"contract":"","purpose":""},
+  {"num":"129-РД","date":"25 липня 2026","payer":"ТОВАРИСТВО З ОБМЕЖЕНОЮ ВІДПОВІДАЛЬНІСТЮ «ТУРБО-ВЕСТ»","code":"439297119152","items":[{"name":"Гумові рукавички (підсилені) для піскоструминних камер і аквабластингу, 680мм","unit":"шт.","qty":1,"price":1590,"sum":1590}],"subtotal":1590,"discount":0,"total":1590,"contract":"","purpose":""}
+];
+let invLastNum=129;
+
+function invSetLastNum(v){const n=parseInt(v);if(!isNaN(n)&&n>0){invLastNum=n;invUpdateBadge();cloudSave();}}
+function invUpdateBadge(){document.getElementById('inv-next-num').textContent=(invLastNum+1)+'-РД';document.getElementById('inv-last-num-input').value=invLastNum;}
+
+const invRS={};let invRid=0;
+function invAddRow(nm='',un='шт.',q=1,pr=0){
+  const id=invRid++;invRS[id]=q*pr;
+  const tr=document.createElement('tr');tr.id='invr'+id;
+  tr.innerHTML=`<td><input value="${nm}" oninput="invRc()" placeholder="Назва товару"></td>
+    <td><input value="${un}"></td>
+    <td><input type="number" value="${q}" min="0" step="any" oninput="invUs(${id})"></td>
+    <td><input type="number" value="${pr}" min="0" step="0.01" oninput="invUs(${id})"></td>
+    <td><input id="invsi${id}" value="${fD(invRS[id])}" readonly class="si"></td>
+    <td><button class="del" onclick="invDr(${id})">×</button></td>`;
+  document.getElementById('inv-tb').appendChild(tr);invRc();
+}
+function invDr(id){document.getElementById('invr'+id)?.remove();delete invRS[id];invRc();}
+function invUs(id){
+  const r=document.getElementById('invr'+id);if(!r)return;
+  const ins=r.querySelectorAll('input[type=number]');
+  invRS[id]=(parseFloat(ins[0].value)||0)*(parseFloat(ins[1].value)||0);
+  document.getElementById('invsi'+id).value=fD(invRS[id]);invRc();
+}
+function invGetItems(){return[...document.querySelectorAll('#inv-tb tr')].map(r=>{const i=r.querySelectorAll('input'),id=parseInt(r.id.slice(4));return{name:i[0].value,unit:i[1].value,qty:parseFloat(i[2].value)||0,price:parseFloat(i[3].value)||0,sum:invRS[id]||0};}).filter(x=>x.name);}
+function invGetSubtotal(){return Object.values(invRS).reduce((a,b)=>a+b,0);}
+function invGetDiscount(){return parseFloat(document.getElementById('inv-discount').value)||0;}
+function invGetTotal(){return Math.max(0,Math.round((invGetSubtotal()-invGetDiscount())*100)/100);}
+function invRc(){
+  const sub=invGetSubtotal(),disc=invGetDiscount(),tot=Math.max(0,sub-disc);
+  document.getElementById('inv-tv').textContent=fD(tot)+' грн';
+  document.getElementById('inv-tw').textContent=tot>0?wDisp(tot):'';
+  invUpdatePreview();
+}
+
+function invToggleContract(){
+  const ct=document.getElementById('inv-ct').value.trim();
+  const block=document.getElementById('inv-contract-block');
+  if(ct){block.classList.add('visible');invUpdatePreview();}
+  else{block.classList.remove('visible');}
+}
+function invUpdatePreview(){
+  const ct=document.getElementById('inv-ct').value.trim();
+  if(!ct)return;
+  const pct=parseFloat(document.getElementById('inv-deposit-pct').value)||40;
+  const restPct=100-pct;
+  document.getElementById('inv-rest-pct').value=restPct;
+  const day=document.getElementById('inv-day').value;
+  const mon=document.getElementById('inv-mon').value;
+  const yr=document.getElementById('inv-yr').value;
+  const sub=invGetSubtotal(),disc=invGetDiscount(),tot=invGetTotal();
+  const deposit=Math.round(tot*pct/100*100)/100;
+  const rest=Math.round(tot*restPct/100*100)/100;
+  const discLine=disc>0?`, зі знижкою ${fD(tot)} грн`:'';
+  const dateStr=day&&mon&&yr?`${day} ${mon} ${yr} року`:'___';
+  let txt=`Призначення платежу:\nЗавдаток у розмірі ${pct}% від загальної вартості обладнання\nза Договором купівлі продажу №${ct} від ${dateStr}\n`;
+  if(disc>0)txt+=`Загальна вартість договору - ${fD(sub)} грн${discLine}\n`;
+  else txt+=`Загальна вартість договору - ${fD(tot)} грн\n`;
+  txt+=`Сума завдатку (${pct}%) - ${fD(deposit)} грн\n`;
+  txt+=`Решта ${restPct}% (${fD(rest)} грн) сплачується після закінчення виготовлення обладнання`;
+  document.getElementById('inv-payment-purpose').value=txt;
+}
+
+function invSetDbBtns(on){document.getElementById('inv-bcsv').disabled=!on;document.getElementById('inv-bjson').disabled=!on;}
+function invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose){
+  invDB.push({num,date:`${day} ${mon} ${yr}`,payer,code,items:[...items],subtotal,discount,total,contract:ct,purpose});
+  invRenderDB();invSetDbBtns(true);cloudSave();
+  noteRefreshInvoiceSelector();
+}
+function invRenderDB(){
+  const cnt=invDB.length;
+  document.getElementById('inv-db-count').textContent=cnt+' записів';
+  if(!cnt){document.getElementById('inv-db-body').innerHTML='<div class="empty-db">Ще немає збережених рахунків.</div>';return;}
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Платник</th><th>Договір</th><th>Товари</th><th style="text-align:right">Сума, грн</th></tr></thead><tbody>`;
+  invDB.forEach(r=>{
+    const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
+    h+=`<tr><td><b>${r.num}</b></td><td style="white-space:nowrap">${r.date}</td><td>${r.payer}</td>
+      <td>${r.contract||'—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
+      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td></tr>`;
+  });
+  document.getElementById('inv-db-body').innerHTML=h+'</tbody></table>';
+}
+function invClearDB(){if(!confirm('Очистити всю базу рахунків?'))return;invDB=[];invRenderDB();invSetDbBtns(false);cloudSave();noteRefreshInvoiceSelector();}
+function invExportJSON(){
+  const data={lastNum:invLastNum,invoices:invDB};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Рахунки_Голда.json';a.click();
+}
+function invImportDB(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.invoices&&Array.isArray(data.invoices)){
+        invDB=data.invoices;
+        if(data.lastNum)invLastNum=data.lastNum;
+        invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);cloudSave();noteRefreshInvoiceSelector();
+        alert(`✓ Завантажено ${invDB.length} рахунків. Останній номер: ${invLastNum}-РД`);
+      }else{alert('Невірний формат файлу.');}
+    }catch(err){alert('Помилка: '+err.message);}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+function invExportCSV(){
+  if(!invDB.length)return;
+  const BOM='\uFEFF';
+  const hdr=['№ рахунку','Дата','Платник','РНОКПП','Договір №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Сума без знижки','Знижка','Загальна сума'];
+  const rows=[hdr];
+  invDB.forEach(r=>{
+    if(!r.items.length){rows.push([r.num,r.date,r.payer,r.code,r.contract||'','','','','','',r.subtotal||r.total,r.discount||0,r.total]);}
+    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?r.date:'',i===0?r.payer:'',i===0?r.code:'',i===0?(r.contract||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?(r.subtotal||r.total):'',i===0?(r.discount||0):'',i===0?r.total:'']);});}
+  });
+  const csv=BOM+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Рахунки_Голда.csv';a.click();
+}
+
+function invMakePDF(){
+  const items=invGetItems();
+  const subtotal=invGetSubtotal();
+  const discount=invGetDiscount();
+  const total=invGetTotal();
+  const day=document.getElementById('inv-day').value;
+  const mon=document.getElementById('inv-mon').value;
+  const yr=document.getElementById('inv-yr').value;
+  const ct=document.getElementById('inv-ct').value.trim();
+  const payer=document.getElementById('inv-payer').value;
+  const code=document.getElementById('inv-code').value;
+  const purpose=ct?document.getElementById('inv-payment-purpose').value.trim():'';
+  if(!day||!mon||!yr){alert('Заповніть дату!');return;}
+  if(!payer){alert('Заповніть назву платника!');return;}
+  invLastNum++;const num=invLastNum+'-РД';invUpdateBadge();
+  const{hWords,hForm,kInt,kWords}=amtP(total);
+  const hStr=String(Math.floor(total)).replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
+  const payerLine=code?`${payer} (${code})`:`${payer}`;
+  const allRows=[...items];while(allRows.length<7)allRows.push(null);
+  
+  const dayPad = String(day).padStart(2, '0');
+
+  const rowsHTML=allRows.map(it=>it?`<tr>
+    <td style="padding:1px 3px;font-size:8pt">${it.name}</td>
+    <td style="padding:1px 3px;font-size:8pt;text-align:center">${it.unit}</td>
+    <td style="padding:1px 3px;font-size:8pt;text-align:center">${it.qty}</td>
+    <td style="padding:1px 3px;font-size:8pt;text-align:right">${fP(it.price)}</td>
+    <td style="padding:1px 3px;font-size:8pt;text-align:right">${fP(it.sum)}</td>
+    </tr>`:`<tr><td style="padding:2px 3px">&nbsp;</td><td></td><td></td><td></td><td></td></tr>`).join('');
+
+  const discountRows=discount>0?`
+    <tr><td colspan="4" style="padding:2px 3px;font-size:8pt">Знижка</td><td style="text-align:right;padding:2px 3px;font-size:8pt">${fP(discount)}</td></tr>
+    <tr style="font-weight:bold"><td colspan="4" style="padding:2px 3px;font-size:9pt">Сума без знижки</td><td style="text-align:right;padding:2px 3px;font-size:9pt">${fP(subtotal)}</td></tr>`:'';
+
+  const purposeHTML=purpose?`
+    <div style="margin-top:3mm;border:0.5pt solid #000;padding:2mm 3mm;font-size:7.5pt;line-height:1.6">
+      ${purpose.split('\n').map((l,i)=>i===0?`<div style="font-weight:bold">${l}</div>`:`<div>${l}</div>`).join('')}
+    </div>`:'';
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+@page{size:A4;margin:12mm 12mm 10mm 12mm}
+*{box-sizing:border-box;margin:0;padding:0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+body{font-family:Arial,sans-serif;font-size:8pt;color:#000;line-height:1.15}
+.header{display:flex;margin-bottom:2mm}
+.left{border:0.4pt solid #000;width:102mm;flex-shrink:0}
+.lr{display:flex;align-items:center;padding:0.8mm 0}
+.lr.tall{align-items:flex-start;padding-top:0.8mm}
+.lbl{font-weight:bold;font-size:8pt;padding:0 0 0 1.5mm;white-space:nowrap;width:24mm;flex-shrink:0;line-height:1.2}
+.lbl-sub{font-weight:normal;font-size:7pt;display:block}
+.val-wrap{flex:1;padding-right:1.5mm;display:flex;flex-direction:column;gap:0.6mm}
+.ul{border-bottom:0.4pt solid #000;font-size:8pt;text-align:center;padding:0 2px;margin:0;line-height:1.2;display:block}
+.ul.b{font-weight:bold;font-size:9pt}
+.ul.it{font-style:italic;font-size:6.5pt}
+.mfo-row{display:flex;align-items:flex-end;width:100%}
+.mfo-gap{border-bottom:0.4pt solid #000;flex:0 0 8mm}
+.mfo-lbl{font-weight:bold;font-size:8pt;white-space:nowrap;padding:0 1.5mm 0 1mm;line-height:1.2}
+.mfo-val{border-bottom:0.4pt solid #000;flex:1;font-size:8pt;text-align:center;padding:0 2px;line-height:1.2}
+.right{flex:1;padding-left:5mm}
+.rtitle{font-size:12.5pt;font-weight:bold;text-align:center;margin-bottom:3mm}
+.rnum{display:flex;align-items:center;gap:2mm;margin-bottom:3mm}
+.rnum-box{border:0.4pt solid #000;flex:1;padding:0.8mm 3mm;font-size:11pt;font-weight:bold;text-align:center}
+.rdate{display:flex;align-items:baseline;gap:0.8mm;margin-bottom:3mm}
+.uday{border-bottom:0.5pt solid #000;min-width:7mm;padding:0 1px;text-align:center;font-weight:bold;font-size:10pt;line-height:1.1;display:inline-block}
+.umon{border-bottom:0.5pt solid #000;padding:0 2px;white-space:nowrap;line-height:1.1;display:inline-block}
+.rct{display:flex;align-items:center;gap:2mm}
+.rct-box{border:0.4pt solid #000;flex:1;padding:0.8mm 2mm;min-height:5mm;font-size:8pt}
+.platnik{border:0.4pt solid #000;display:flex;margin-bottom:2mm}
+.platnik-l{flex:1;padding:1.5mm 2mm;border-right:0.4pt solid #000;font-size:8pt}
+.platnik-r{width:82mm;padding:1.5mm 2mm;font-size:8pt}
+table.tbl{width:100%;border-collapse:collapse}
+table.tbl th{border:0.5pt solid #000;padding:1.5px 3px;font-style:italic;font-weight:bold;font-size:8pt;text-align:center}
+table.tbl td{border:0.5pt solid #000;padding:1px 3px;font-size:8pt}
+.trt td{font-weight:bold;font-size:9pt}
+.sum-line{margin-top:2mm;font-size:8pt;display:flex;align-items:baseline;flex-wrap:wrap;gap:0.8mm;line-height:1.8}
+.sul{border-bottom:0.5pt solid #000;padding:0 1mm;line-height:1.1;display:inline-block}
+.sign{margin-top:6mm;font-size:9pt}
+.sign-line{display:inline-block;border-bottom:0.5pt solid #000;width:55mm;margin-left:1.5mm}
+</style></head><body>
+<div class="header">
+  <div class="left">
+    <div class="lr tall"><div class="lbl">Продавець<span class="lbl-sub">(виконавець)</span></div>
+      <div class="val-wrap"><div class="ul b">ФОП Голда Лариса Сергіївна</div></div></div>
+    <div class="lr"><div class="lbl">Адреса</div>
+      <div class="val-wrap"><div class="ul it">23600, вул. Визволення, 15, м. Тульчин, Вінницька область,Україна</div></div></div>
+    <div class="lr"><div class="lbl">IBAN</div>
+      <div class="val-wrap"><div class="ul">UA 79 3003 3500 0000 0026 0094 7250 7</div></div></div>
+    <div class="lr tall"><div class="lbl">в</div>
+      <div class="val-wrap">
+        <div class="ul">АТ "Райффайзен Банк"</div>
+        <div class="mfo-row"><span class="mfo-gap"></span><span class="mfo-lbl">МФО</span><span class="mfo-val">300335</span></div>
+      </div></div>
+    <div class="lr"><div class="lbl">р.н.о.к.п.п.</div>
+      <div class="val-wrap"><div class="ul">2588607763</div></div></div>
+    <div class="lr"><div class="lbl">Телефон</div>
+      <div class="val-wrap"><div class="ul">+380985249888</div></div></div>
+  </div>
+  <div class="right">
+    <div class="rtitle">РАХУНОК-ФАКТУРА</div>
+    <div class="rnum"><span style="font-weight:bold;font-size:9pt">№</span><div class="rnum-box">${num}</div></div>
+    <div class="rdate"><span>від</span><span>"</span><span class="uday">${dayPad}</span><span>"</span>
+      <span class="umon">${mon}&nbsp;&nbsp;${yr}</span><span>року</span></div>
+    <div class="rct"><span style="white-space:nowrap;font-size:8pt">до договору №</span>
+      <div class="rct-box">${ct}</div></div>
+  </div>
+</div>
+<div class="platnik">
+  <div class="platnik-l"><b>Платник</b>&nbsp;&nbsp;<b>${payerLine}</b></div>
+  <div class="platnik-r"><b>Доповнення</b>&nbsp;&nbsp;-</div>
+</div>
+<table class="tbl"><thead><tr>
+  <th style="width:46%">Найменування</th><th style="width:9%">Од. вим.</th>
+  <th style="width:8%">К-сть</th><th style="width:15%">Ціна</th><th style="width:15%">Сума</th>
+</tr></thead><tbody>${rowsHTML}</tbody>
+${discountRows}
+<tr class="trt"><td colspan="4" style="padding:2px 3px">Всього</td><td style="text-align:right;padding:2px 3px">${fP(subtotal)}</td></tr>
+<tr class="trt"><td colspan="4" style="padding:2px 3px">Загальна сума</td><td style="text-align:right;padding:2px 3px">${fP(total)}</td></tr>
+</table>
+<div class="sum-line">
+  <b>Загальна сума, що підлягає оплаті</b>
+  <span class="sul">${hStr}&nbsp;(${hWords}&nbsp;${hForm})</span><b>грн.</b>
+  <span class="sul">${kInt}&nbsp;(${kWords})</span><b>коп.</b>
+</div>
+<div style="font-size:7pt;font-style:italic;margin-top:0.5mm">Примітка:</div>
+${purposeHTML}
+<div class="sign"><b>ФОП</b><span class="sign-line">&nbsp;ФОП Голда Лариса Сергіївна</span>
+  <br><br><span style="font-size:8pt">м.п.</span></div>
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+
+  invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Рахунок_${num}.html`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+invAddRow();
+
+// ═══════════════════════ НАКЛАДНІ ═══════════════════════
+let noteDB=[];
+let noteLastNum=75;
+
+function noteSetLastNum(v){const n=parseInt(v);if(!isNaN(n)&&n>0){noteLastNum=n;noteUpdateBadge();cloudSave();}}
+function noteUpdateBadge(){
+  document.getElementById('note-next-num').textContent=(noteLastNum+1)+'Д';
+  document.getElementById('note-last-num-input').value=noteLastNum;
+}
+
+function noteRefreshInvoiceSelector(){
+  const sel=document.getElementById('invoice-select');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— заповнити вручну —</option>';
+  invDB.forEach((inv,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=`${inv.num} від ${inv.date} — ${inv.payer} (${fD(inv.total)} грн)`;
+    sel.appendChild(opt);
+  });
+  if(invDB.length){
+    document.getElementById('no-invoices-msg').style.display='none';
+    document.getElementById('invoice-selector').style.display='flex';
+  }else{
+    document.getElementById('no-invoices-msg').style.display='block';
+    document.getElementById('invoice-selector').style.display='none';
+  }
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+
+function linkInvoice(){
+  const idx=document.getElementById('invoice-select').value;
+  const badge=document.getElementById('linked-badge');
+  if(idx===''){
+    badge.classList.remove('show');
+    noteClearRows();noteAddRow();
+    document.getElementById('note-buyer').value='';
+    document.getElementById('note-buyer-code').value='';
+    return;
+  }
+  const inv=invDB[parseInt(idx)];
+  if(!inv)return;
+  document.getElementById('note-buyer').value=inv.payer||'';
+  document.getElementById('note-buyer-code').value=inv.code||'';
+  noteClearRows();
+  (inv.items||[]).forEach(it=>noteAddRow(it.name,it.unit,it.qty,it.price));
+  if(!inv.items||inv.items.length===0)noteAddRow();
+  badge.classList.add('show');
+}
+
+const noteRS={};let noteRid=0;
+function noteClearRows(){
+  document.getElementById('note-tb').innerHTML='';
+  Object.keys(noteRS).forEach(k=>delete noteRS[k]);noteRc();
+}
+function noteAddRow(nm='',un='шт.',q=1,pr=0){
+  const id=noteRid++;noteRS[id]=q*pr;
+  const tr=document.createElement('tr');tr.id='noter'+id;
+  tr.innerHTML=`<td><input value="${nm}" oninput="noteRc()" placeholder="Назва товару"></td>
+    <td><input value="${un}"></td>
+    <td><input type="number" value="${q}" min="0" step="any" oninput="noteUs(${id})"></td>
+    <td><input type="number" value="${pr}" min="0" step="0.01" oninput="noteUs(${id})"></td>
+    <td><input id="notesi${id}" value="${fD(noteRS[id])}" readonly class="si"></td>
+    <td><button class="del" onclick="noteDr(${id})">×</button></td>`;
+  document.getElementById('note-tb').appendChild(tr);noteRc();
+}
+function noteDr(id){document.getElementById('noter'+id)?.remove();delete noteRS[id];noteRc();}
+function noteUs(id){
+  const r=document.getElementById('noter'+id);if(!r)return;
+  const ins=r.querySelectorAll('input[type=number]');
+  noteRS[id]=(parseFloat(ins[0].value)||0)*(parseFloat(ins[1].value)||0);
+  document.getElementById('notesi'+id).value=fD(noteRS[id]);noteRc();
+}
+function noteGetItems(){return[...document.querySelectorAll('#note-tb tr')].map(r=>{const i=r.querySelectorAll('input'),id=parseInt(r.id.slice(5));return{name:i[0].value,unit:i[1].value,qty:parseFloat(i[2].value)||0,price:parseFloat(i[3].value)||0,sum:noteRS[id]||0};}).filter(x=>x.name);}
+function noteGetTotal(){return Math.round(Object.values(noteRS).reduce((a,b)=>a+b,0)*100)/100;}
+function noteRc(){
+  const tot=noteGetTotal();
+  document.getElementById('note-tv').textContent=fD(tot)+' грн';
+  document.getElementById('note-tw').textContent=tot>0?wDisp(tot):'';
+}
+noteAddRow();
+
+function noteSetDbBtns(on){document.getElementById('note-bcsv').disabled=!on;document.getElementById('note-bjson').disabled=!on;}
+function noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv){
+  noteDB.push({num,date:`${day} ${mon} ${yr}`,buyer,bcode,items:[...items],total,linkedInv});
+  noteRenderDB();noteSetDbBtns(true);cloudSave();
+}
+function noteRenderDB(){
+  const cnt=noteDB.length;
+  document.getElementById('note-db-count').textContent=cnt+' записів';
+  if(!cnt){document.getElementById('note-db-body').innerHTML='<div class="empty-db">Ще немає збережених накладних.</div>';return;}
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Рахунок</th><th>Товари</th><th style="text-align:right">Сума, грн</th></tr></thead><tbody>`;
+  noteDB.forEach(r=>{
+    const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
+    h+=`<tr><td><b>${r.num}</b></td><td style="white-space:nowrap">${r.date}</td><td>${r.buyer}</td>
+      <td>${r.linkedInv||'—'}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
+      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td></tr>`;
+  });
+  document.getElementById('note-db-body').innerHTML=h+'</tbody></table>';
+}
+function noteClearDB(){if(!confirm('Очистити базу накладних?'))return;noteDB=[];noteRenderDB();noteSetDbBtns(false);cloudSave();}
+function noteExportJSON(){
+  const data={lastNum:noteLastNum,notes:noteDB};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Накладні_Голда.json';a.click();
+}
+function noteImportDB(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.notes&&Array.isArray(data.notes)){
+        noteDB=data.notes;
+        if(data.lastNum)noteLastNum=data.lastNum;
+        noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);cloudSave();
+        alert(`✓ Завантажено ${noteDB.length} накладних. Останній №: ${noteLastNum}Д`);
+      }else{alert('Невірний формат файлу.');}
+    }catch(err){alert('Помилка: '+err.message);}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+function noteExportCSV(){
+  if(!noteDB.length)return;
+  const BOM='\uFEFF';
+  const hdr=['№ накладної','Дата','Покупець','Код','Рахунок №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Загальна сума'];
+  const rows=[hdr];
+  noteDB.forEach(r=>{
+    if(!r.items.length){rows.push([r.num,r.date,r.buyer,r.bcode,r.linkedInv||'','','','','','',r.total]);}
+    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?r.date:'',i===0?r.buyer:'',i===0?r.bcode:'',i===0?(r.linkedInv||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?r.total:'']);});}
+  });
+  const csv=BOM+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Накладні_Голда.csv';a.click();
+}
+
+function noteMakePDF(){
+  const items=noteGetItems();
+  const total=noteGetTotal();
+  const day=document.getElementById('note-day').value;
+  const mon=document.getElementById('note-mon').value;
+  const yr=document.getElementById('note-yr').value;
+  const buyer=document.getElementById('note-buyer').value;
+  const bcode=document.getElementById('note-buyer-code').value;
+  const selIdx=document.getElementById('invoice-select')?.value;
+  const linkedInv=selIdx&&selIdx!==''&&invDB[parseInt(selIdx)]?invDB[parseInt(selIdx)].num:'';
+  if(!day||!mon||!yr){alert('Заповніть дату!');return;}
+  if(!buyer){alert('Заповніть покупця!');return;}
+
+  noteLastNum++;
+  const num=noteLastNum+'Д';
+  noteUpdateBadge();
+
+  const{hWords,hForm,kInt,kWords}=amtP(total);
+  const hStr=String(Math.floor(total)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+  const buyerLine=bcode?`${buyer} (${bcode})`:`${buyer}`;
+
+  const dayPad = String(day).padStart(2, '0');
+
+  const allRows=[...items];while(allRows.length<7)allRows.push(null);
+  
+  const rowsHTML=allRows.map(it=>it?`<tr>
+    <td style="padding:8px 4px;font-size:10pt">${it.name}</td>
+    <td style="padding:8px 4px;font-size:10pt;text-align:center">${it.unit}</td>
+    <td style="padding:8px 4px;font-size:10pt;text-align:center">${it.qty}</td>
+    <td style="padding:8px 4px;font-size:10pt;text-align:right">${fP(it.price)}</td>
+    <td style="padding:8px 4px;font-size:10pt;text-align:right;background-color:#e0f7fa">${fP(it.sum)}</td>
+    </tr>`:`<tr>
+      <td style="height:11mm"></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td style="background-color:#e0f7fa"></td>
+    </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+@page{size:A4;margin:20mm 20mm 15mm 20mm}
+*{box-sizing:border-box;margin:0;padding:0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+body{font-family:Arial,sans-serif;font-size:11pt;color:#000;line-height:1.4}
+.seller-block{margin-bottom:8mm}
+.seller-line{margin-bottom:2mm}
+.seller-details{margin-left:40mm;font-size:10pt;line-height:1.5}
+.title{text-align:center;margin:10mm 0 6mm;font-size:14pt;font-weight:bold}
+table.tbl{width:100%;border-collapse:collapse;margin-bottom:5mm}
+table.tbl th{border:1px solid #000;padding:8px 4px;font-size:10pt;font-weight:bold;text-align:center;background:#f8f8f8}
+table.tbl td{border:1px solid #000;padding:4px;font-size:10pt}
+.tr-total td{font-size:11pt}
+.sum-text{margin:4mm 0 8mm;font-size:11pt;font-weight:bold;}
+.sign-block{display:flex;justify-content:space-between;margin-top:6mm;font-size:11pt}
+.sign-col{width:45%}
+.sign-line{border-bottom:1px solid #000;display:inline-block;width:50mm;vertical-align:bottom;margin-left:2mm}
+.date-line{font-size:11pt;margin-top:4mm}
+</style></head><body>
+
+<div class="seller-block">
+  <div class="seller-line"><b>Продавець</b>:&nbsp;&nbsp;ФОП Голда Лариса Сергіївна</div>
+  <div class="seller-details">
+    23600, вул. Визволення, 15, м. Тульчин, Вінницька область,<br>
+    Україна тел. +380985249888,&nbsp;&nbsp;&nbsp;р/р<br>
+    UA 79 3003 3500 0000 0026 0094 7250 7, РНОКПП: 2588607763
+  </div>
+</div>
+
+<div class="seller-line"><b>Покупець</b>:&nbsp;&nbsp;${buyerLine}</div>
+
+<div class="title">
+  Видаткова накладна№<br>
+  ${num}&nbsp;&nbsp;&nbsp;від "${dayPad}" ${mon} ${yr}р.
+</div>
+
+<table class="tbl">
+  <thead><tr>
+    <th style="width:46%">Найменування</th>
+    <th style="width:10%">Од.<br>вим.</th>
+    <th style="width:9%">К-сть</th>
+    <th style="width:16%">Ціна</th>
+    <th style="width:16%;background-color:#e0f7fa">Сума</th>
+  </tr></thead>
+  <tbody>${rowsHTML}</tbody>
+  <tr class="tr-total">
+    <td colspan="4" style="padding:8px 4px;text-align:right"><b>Всього</b></td>
+    <td style="text-align:right;padding:8px 4px;background-color:#e0f7fa"><b>${fP(total)}</b></td>
+  </tr>
+  <tr><td colspan="5" style="padding:2px 4px;border:1px solid #000">&nbsp;</td></tr>
+  <tr class="tr-total">
+    <td colspan="4" style="padding:8px 4px;text-align:right"><b>Загальна сума</b></td>
+    <td style="text-align:right;padding:8px 4px;background-color:#e0f7fa"><b>${fP(total)}</b></td>
+  </tr>
+</table>
+
+<div class="sum-text">Всього на суму: ${hStr} (${hWords} ${hForm}) ${kInt} (${kWords}) коп.</div>
+
+<div class="sign-block">
+  <div class="sign-col">
+    Продавець <span class="sign-line"></span>
+    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:1px solid #000;display:inline-block;width:25mm"></span> 20&nbsp;&nbsp;р.</div>
+  </div>
+  <div class="sign-col">
+    Отримав(ла) <span class="sign-line"></span>
+    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:1px solid #000;display:inline-block;width:25mm"></span> 20&nbsp;&nbsp;р.</div>
+  </div>
+</div>
+
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+
+  noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Накладна_${num}.html`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+</script>
+</body>
+</html>
