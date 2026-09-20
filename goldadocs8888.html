@@ -81,6 +81,12 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
+/* Кнопки дій у таблиці бази */
+.btn-dl-pdf{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0;border-radius:4px;padding:2px 6px;text-decoration:none;font-weight:600;font-size:10px;display:inline-block;transition:background .2s}
+.btn-dl-pdf:hover{background:#d0e8fa}
+.btn-del-row{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:13px;padding:0 4px;margin-left:4px;transition:transform .15s}
+.btn-del-row:hover{transform:scale(1.2)}
+
 /* Екран авторизації (ПІН-код) */
 #auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f2f5;display:flex;justify-content:center;align-items:center;z-index:99999}
 .auth-card{background:#fff;padding:24px 28px;border-radius:8px;border:1px solid #dde2ea;width:100%;max-width:320px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
@@ -299,7 +305,7 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 
 <script>
 // ══════════════════════ АВТОРИЗАЦІЯ (ПІН-КОД) ══════════════════════
-const CORRECT_PIN = '7788'; // <-- Встановіть свій ПІН-код тут
+const CORRECT_PIN = '7788';
 
 function checkPin() {
   const enteredPin = document.getElementById('pin-input').value;
@@ -314,7 +320,6 @@ function checkPin() {
   }
 }
 
-// Автоматичний вхід, якщо вже вводили ПІН у цій вкладці
 if (sessionStorage.getItem('golda_auth') === 'ok') {
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('app-container').style.display = 'block';
@@ -401,11 +406,27 @@ async function cloudLoad(){
     noteRefreshInvoiceSelector();
     setSync('ok',`Синхронізовано з Google Диск · ${invDB.length} рахунків, ${noteDB.length} накладних`);
   } catch (err) {
-    setSync('off', 'Помилка завантаження (перший запуск).');
+    setSync('off', 'Помилка завантаження.');
     invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);
     noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);
     noteRefreshInvoiceSelector();
-    cloudSave();
+  }
+}
+
+// Завантаження PDF на Google Диск через Apps Script
+async function uploadPdfToDrive(fileName, html) {
+  if (!APP_URL) return null;
+  try {
+    const res = await fetch(APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'savePdf', fileName: fileName, html: html }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    });
+    const result = await res.json();
+    return result.pdfUrl || null;
+  } catch (e) {
+    console.warn('Не вдалося зберегти PDF на Диск:', e);
+    return null;
   }
 }
 
@@ -482,22 +503,42 @@ function invUpdatePreview(){
 }
 
 function invSetDbBtns(on){document.getElementById('inv-bcsv').disabled=!on;document.getElementById('inv-bjson').disabled=!on;}
-function invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose){
-  invDB.push({num,date:`${day} ${mon} ${yr}`,payer,code,items:[...items],subtotal,discount,total,contract:ct,purpose});
+function invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose,pdfUrl=''){
+  invDB.push({num,date:`${day} ${mon} ${yr}`,payer,code,items:[...items],subtotal,discount,total,contract:ct,purpose,pdfUrl});
   invRenderDB();invSetDbBtns(true);cloudSave();
   noteRefreshInvoiceSelector();
 }
+
+function invDelete(idx){
+  const inv = invDB[idx];
+  if(!confirm(`Видалити рахунок №${inv.num} (${inv.payer}) з бази?`)) return;
+  invDB.splice(idx, 1);
+  invRenderDB();
+  invSetDbBtns(invDB.length > 0);
+  cloudSave();
+  noteRefreshInvoiceSelector();
+}
+
 function invRenderDB(){
   const cnt=invDB.length;
   document.getElementById('inv-db-count').textContent=cnt+' записів';
   if(!cnt){document.getElementById('inv-db-body').innerHTML='<div class="empty-db">Ще немає збережених рахунків.</div>';return;}
-  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Платник</th><th>Договір</th><th>Товари</th><th style="text-align:right">Сума, грн</th></tr></thead><tbody>`;
-  invDB.forEach(r=>{
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Платник</th><th>Договір</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
+  invDB.forEach((r, idx)=>{
     const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
-    h+=`<tr><td><b>${r.num}</b></td><td style="white-space:nowrap">${r.date}</td><td>${r.payer}</td>
+    const pdfBtn = r.pdfUrl ? `<a href="${r.pdfUrl}" target="_blank" class="btn-dl-pdf" title="Завантажити копію з Диска">📥 PDF</a>` : '';
+    h+=`<tr>
+      <td><b>${r.num}</b></td>
+      <td style="white-space:nowrap">${r.date}</td>
+      <td>${r.payer}</td>
       <td>${r.contract||'—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
-      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td></tr>`;
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
+      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td>
+      <td style="text-align:center;white-space:nowrap">
+        ${pdfBtn}
+        <button class="btn-del-row" onclick="invDelete(${idx})" title="Видалити">🗑</button>
+      </td>
+    </tr>`;
   });
   document.getElementById('inv-db-body').innerHTML=h+'</tbody></table>';
 }
@@ -537,7 +578,7 @@ function invExportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Рахунки_Голда.csv';a.click();
 }
 
-function invMakePDF(){
+async function invMakePDF(){
   const items=invGetItems();
   const subtotal=invGetSubtotal();
   const discount=invGetDiscount();
@@ -666,7 +707,11 @@ ${purposeHTML}
 <script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
 
-  invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose);
+  setSync('busy', 'Збереження PDF на Google Диск...');
+  const pdfUrl = await uploadPdfToDrive(`Рахунок_${num}`, html);
+
+  invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose,pdfUrl);
+
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -759,21 +804,40 @@ function noteRc(){
 noteAddRow();
 
 function noteSetDbBtns(on){document.getElementById('note-bcsv').disabled=!on;document.getElementById('note-bjson').disabled=!on;}
-function noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv){
-  noteDB.push({num,date:`${day} ${mon} ${yr}`,buyer,bcode,items:[...items],total,linkedInv});
+function noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv,pdfUrl=''){
+  noteDB.push({num,date:`${day} ${mon} ${yr}`,buyer,bcode,items:[...items],total,linkedInv,pdfUrl});
   noteRenderDB();noteSetDbBtns(true);cloudSave();
 }
+
+function noteDelete(idx){
+  const note = noteDB[idx];
+  if(!confirm(`Видалити накладну №${note.num} (${note.buyer}) з бази?`)) return;
+  noteDB.splice(idx, 1);
+  noteRenderDB();
+  noteSetDbBtns(noteDB.length > 0);
+  cloudSave();
+}
+
 function noteRenderDB(){
   const cnt=noteDB.length;
   document.getElementById('note-db-count').textContent=cnt+' записів';
   if(!cnt){document.getElementById('note-db-body').innerHTML='<div class="empty-db">Ще немає збережених накладних.</div>';return;}
-  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Рахунок</th><th>Товари</th><th style="text-align:right">Сума, грн</th></tr></thead><tbody>`;
-  noteDB.forEach(r=>{
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Рахунок</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
+  noteDB.forEach((r, idx)=>{
     const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
-    h+=`<tr><td><b>${r.num}</b></td><td style="white-space:nowrap">${r.date}</td><td>${r.buyer}</td>
+    const pdfBtn = r.pdfUrl ? `<a href="${r.pdfUrl}" target="_blank" class="btn-dl-pdf" title="Завантажити копію з Диска">📥 PDF</a>` : '';
+    h+=`<tr>
+      <td><b>${r.num}</b></td>
+      <td style="white-space:nowrap">${r.date}</td>
+      <td>${r.buyer}</td>
       <td>${r.linkedInv||'—'}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
-      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td></tr>`;
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
+      <td style="text-align:right;white-space:nowrap"><b>${fD(r.total)}</b></td>
+      <td style="text-align:center;white-space:nowrap">
+        ${pdfBtn}
+        <button class="btn-del-row" onclick="noteDelete(${idx})" title="Видалити">🗑</button>
+      </td>
+    </tr>`;
   });
   document.getElementById('note-db-body').innerHTML=h+'</tbody></table>';
 }
@@ -813,7 +877,7 @@ function noteExportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Накладні_Голда.csv';a.click();
 }
 
-function noteMakePDF(){
+async function noteMakePDF(){
   const items=noteGetItems();
   const total=noteGetTotal();
   const day=document.getElementById('note-day').value;
@@ -923,7 +987,11 @@ table.tbl td{border:1px solid #000;padding:4px;font-size:10pt}
 <script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
 
-  noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv);
+  setSync('busy', 'Збереження PDF на Google Диск...');
+  const pdfUrl = await uploadPdfToDrive(`Накладна_${num}`, html);
+
+  noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv,pdfUrl);
+
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
