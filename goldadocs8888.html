@@ -100,16 +100,7 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 </head>
 <body>
 
-<!-- Вікно блокування -->
-<div id="auth-overlay">
-  <div class="auth-card">
-    <h2>Вхід у систему</h2>
-    <p>Введіть ПІН-код для доступу до накладних</p>
-    <input type="password" id="pin-input" maxlength="6" autofocus onkeypress="if(event.key==='Enter')checkPin()">
-    <button onclick="checkPin()">Увійти</button>
-    <div class="auth-err" id="auth-err">Невірний ПІН-код</div>
-  </div>
-</div>
+
 
 <div id="app-container" style="display:block">
   <h1>Рахунки та накладні · ФОП Голда Лариса Сергіївна</h1>
