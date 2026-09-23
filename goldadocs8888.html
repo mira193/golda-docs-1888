@@ -916,23 +916,23 @@ async function noteMakePDF(){
       <td style="background-color:#e0f7fa"></td>
     </tr>`).join('');
 
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-@page{size:A4;margin:20mm 20mm 15mm 20mm}
-*{box-sizing:border-box;margin:0;padding:0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
-body{font-family:Arial,sans-serif;font-size:11pt;color:#000;line-height:1.4}
-.seller-block{margin-bottom:8mm}
-.seller-line{margin-bottom:2mm}
-.seller-details{margin-left:40mm;font-size:10pt;line-height:1.5}
-.title{text-align:center;margin:10mm 0 6mm;font-size:14pt;font-weight:bold}
-table.tbl{width:100%;border-collapse:collapse;margin-bottom:5mm}
-table.tbl th{border:1px solid #000;padding:8px 4px;font-size:10pt;font-weight:bold;text-align:center;background:#f8f8f8}
-table.tbl td{border:1px solid #000;padding:4px;font-size:10pt}
-.tr-total td{font-size:11pt}
-.sum-text{margin:4mm 0 8mm;font-size:11pt;font-weight:bold;}
-.sign-block{display:flex;justify-content:space-between;margin-top:6mm;font-size:11pt}
-.sign-col{width:45%}
-.sign-line{border-bottom:1px solid #000;display:inline-block;width:50mm;vertical-align:bottom;margin-left:2mm}
-.date-line{font-size:11pt;margin-top:4mm}
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+@page{size:A4;margin:12mm 12mm 10mm 12mm}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font-family:Arial,sans-serif;font-size:9.5pt;color:#000;line-height:1.25}
+.seller-block{margin-bottom:4mm}
+.seller-line{margin-bottom:1.5mm;font-size:9.5pt}
+.seller-details{margin-left:26mm;font-size:8.5pt;line-height:1.35;color:#222}
+.title{text-align:center;margin:5mm 0 4mm;font-size:13pt;font-weight:bold;line-height:1.2}
+table.tbl{width:100%;border-collapse:collapse;margin-bottom:3mm}
+table.tbl th{border:0.5pt solid #000;padding:4px;font-size:8.5pt;font-weight:bold;text-align:center;background:#f5f6f8}
+table.tbl td{border:0.5pt solid #000;padding:3px 5px;font-size:9pt}
+.tr-total td{font-size:9.5pt;font-weight:bold}
+.sum-text{margin:3mm 0 5mm;font-size:9.5pt;font-weight:bold}
+.sign-block{display:flex;justify-content:space-between;margin-top:6mm;font-size:9.5pt}
+.sign-col{width:46%}
+.sign-line{border-bottom:0.5pt solid #000;display:inline-block;width:45mm;vertical-align:bottom;margin-left:2mm}
+.date-line{font-size:9pt;margin-top:3mm}
 </style></head><body>
 
 <div class="seller-block">
@@ -947,27 +947,26 @@ table.tbl td{border:1px solid #000;padding:4px;font-size:10pt}
 <div class="seller-line"><b>Покупець</b>:&nbsp;&nbsp;${buyerLine}</div>
 
 <div class="title">
-  Видаткова накладна№<br>
-  ${num}&nbsp;&nbsp;&nbsp;від "${dayPad}" ${mon} ${yr}р.
+  Видаткова накладна № ${num}<br>
+  <span style="font-size:10.5pt;font-weight:normal">від "${dayPad}" ${mon} ${yr} р.</span>
 </div>
 
 <table class="tbl">
   <thead><tr>
-    <th style="width:46%">Найменування</th>
+    <th style="width:50%">Найменування</th>
     <th style="width:10%">Од.<br>вим.</th>
-    <th style="width:9%">К-сть</th>
+    <th style="width:8%">К-сть</th>
     <th style="width:16%">Ціна</th>
-    <th style="width:16%;background-color:#e0f7fa">Сума</th>
+    <th style="width:16%;background-color:#eef7fa">Сума</th>
   </tr></thead>
   <tbody>${rowsHTML}</tbody>
   <tr class="tr-total">
-    <td colspan="4" style="padding:8px 4px;text-align:right"><b>Всього</b></td>
-    <td style="text-align:right;padding:8px 4px;background-color:#e0f7fa"><b>${fP(total)}</b></td>
+    <td colspan="4" style="padding:4px 6px;text-align:right">Всього:</td>
+    <td style="text-align:right;padding:4px 6px;background-color:#eef7fa">${fP(total)}</td>
   </tr>
-  <tr><td colspan="5" style="padding:2px 4px;border:1px solid #000">&nbsp;</td></tr>
   <tr class="tr-total">
-    <td colspan="4" style="padding:8px 4px;text-align:right"><b>Загальна сума</b></td>
-    <td style="text-align:right;padding:8px 4px;background-color:#e0f7fa"><b>${fP(total)}</b></td>
+    <td colspan="4" style="padding:4px 6px;text-align:right">Разом до оплати:</td>
+    <td style="text-align:right;padding:4px 6px;background-color:#eef7fa">${fP(total)}</td>
   </tr>
 </table>
 
@@ -976,11 +975,11 @@ table.tbl td{border:1px solid #000;padding:4px;font-size:10pt}
 <div class="sign-block">
   <div class="sign-col">
     Продавець <span class="sign-line"></span>
-    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:1px solid #000;display:inline-block;width:25mm"></span> 20&nbsp;&nbsp;р.</div>
+    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:0.5pt solid #000;display:inline-block;width:22mm"></span> 20&nbsp;&nbsp;р.</div>
   </div>
   <div class="sign-col">
     Отримав(ла) <span class="sign-line"></span>
-    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:1px solid #000;display:inline-block;width:25mm"></span> 20&nbsp;&nbsp;р.</div>
+    <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:0.5pt solid #000;display:inline-block;width:22mm"></span> 20&nbsp;&nbsp;р.</div>
   </div>
 </div>
 
