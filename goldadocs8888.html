@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Рахунки та накладні — ФОП Голда</title>
+<title>Рахунки та накладні — Golda Aquablast</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:16px;max-width:860px;margin:0 auto}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:16px;max-width:890px;margin:0 auto}
 h1{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2c3e50;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #2c3e50}
 .sec{background:#fff;border-radius:6px;padding:14px 16px;margin-bottom:10px;border:1px solid #dde2ea}
 .st{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8a96a3;margin-bottom:10px}
@@ -63,8 +63,6 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 .db-count{font-size:11px;color:#8a96a3}
 .bclear{font-size:10px;color:#e74c3c;background:none;border:none;cursor:pointer;padding:2px 4px}
 .bclear:hover{text-decoration:underline}
-.hint{font-size:10px;color:#8a96a3;margin-top:6px;font-style:italic}
-.info-box{background:#fff8e8;border:1px solid #f0d060;border-radius:4px;padding:8px 10px;font-size:11px;color:#856404;margin-bottom:8px}
 .discount-row{display:flex;align-items:center;gap:8px;margin-top:6px}
 .discount-row label{white-space:nowrap;margin:0}
 .discount-row input{width:100px}
@@ -81,13 +79,18 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
+/* Бейджі ФОП */
+.fop-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}
+.fop-badge-larisa{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0}
+.fop-badge-vlad{background:#fdf2e9;color:#b95c00;border:1px solid #f8cbad}
+
 /* Кнопки дій у таблиці бази */
 .btn-dl-pdf{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0;border-radius:4px;padding:2px 6px;text-decoration:none;font-weight:600;font-size:10px;display:inline-block;transition:background .2s}
 .btn-dl-pdf:hover{background:#d0e8fa}
 .btn-del-row{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:13px;padding:0 4px;margin-left:4px;transition:transform .15s}
 .btn-del-row:hover{transform:scale(1.2)}
 
-/* Екран авторизації (ПІН-код) */
+/* Екран авторизації */
 #auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f2f5;display:flex;justify-content:center;align-items:center;z-index:99999}
 .auth-card{background:#fff;padding:24px 28px;border-radius:8px;border:1px solid #dde2ea;width:100%;max-width:320px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
 .auth-card h2{font-size:15px;margin-bottom:8px;color:#2c3e50}
@@ -100,11 +103,10 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 </head>
 <body>
 
-<!-- Вікно блокування -->
 <div id="auth-overlay">
   <div class="auth-card">
     <h2>Вхід у систему</h2>
-    <p>Введіть ПІН-код для доступу до накладних</p>
+    <p>Введіть ПІН-код для доступу</p>
     <input type="password" id="pin-input" maxlength="6" autofocus onkeypress="if(event.key==='Enter')checkPin()">
     <button onclick="checkPin()">Увійти</button>
     <div class="auth-err" id="auth-err">Невірний ПІН-код</div>
@@ -112,7 +114,7 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 </div>
 
 <div id="app-container" style="display:none">
-  <h1>Рахунки та накладні · ФОП Голда Лариса Сергіївна</h1>
+  <h1>Рахунки та накладні · Golda Aquablast</h1>
 
   <div class="sync-bar">
     <div class="sync-dot" id="sync-dot"></div>
@@ -126,14 +128,26 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 
   <!-- ВКЛАДКА: РАХУНКИ -->
   <div class="tab-panel active" id="tab-inv">
+    <div class="sec" style="background:#eef6fc;border-color:#bcdcf7">
+      <div class="st" style="color:#1a6fa8">🏢 Оберіть продавця (ФОП)</div>
+      <div class="row">
+        <div class="f">
+          <select id="inv-fop-select" style="font-weight:700;font-size:13px;color:#1a252f" onchange="invOnFopChange()">
+            <option value="fop_larisa">ФОП Голда Лариса Сергіївна (Тульчин)</option>
+            <option value="fop_vladyslav">ФОП Голда Владислав Миколайович (Нестерварка)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="num-badge">
       <div>
-        <div class="label">Наступний номер рахунку</div>
-        <div class="next" id="inv-next-num">130-РД</div>
+        <div class="label" id="inv-num-label">Наступний номер рахунку (Лариса):</div>
+        <div class="next" id="inv-next-num">142-РД</div>
       </div>
       <div class="num-edit">
         <span>Змінити останній №:</span>
-        <input type="number" id="inv-last-num-input" value="129" min="1" onchange="invSetLastNum(this.value)">
+        <input type="number" id="inv-last-num-input" value="141" min="1" onchange="invSetLastNum(this.value)">
       </div>
     </div>
 
@@ -221,9 +235,21 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 
   <!-- ВКЛАДКА: НАКЛАДНІ -->
   <div class="tab-panel" id="tab-note">
+    <div class="sec" style="background:#eef6fc;border-color:#bcdcf7">
+      <div class="st" style="color:#1a6fa8">🏢 Оберіть продавця (ФОП)</div>
+      <div class="row">
+        <div class="f">
+          <select id="note-fop-select" style="font-weight:700;font-size:13px;color:#1a252f" onchange="noteOnFopChange()">
+            <option value="fop_larisa">ФОП Голда Лариса Сергіївна (Тульчин)</option>
+            <option value="fop_vladyslav">ФОП Голда Владислав Миколайович (Нестерварка)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="num-badge">
       <div>
-        <div class="label">Наступний номер накладної</div>
+        <div class="label" id="note-num-label">Наступний номер накладної (Лариса):</div>
         <div class="next" id="note-next-num">76Д</div>
       </div>
       <div class="num-edit">
@@ -304,6 +330,45 @@ table.db td{padding:4px 6px;border-bottom:1px solid #f5f6f8;color:#333}
 </div>
 
 <script>
+// ══════════════════════ РЕКВІЗИТИ ПІДПРИЄМЦІВ (ФОП) ══════════════════════
+const FOPS = {
+  fop_larisa: {
+    key: "fop_larisa",
+    shortLabel: "Лариса",
+    fullName: "ФОП Голда Лариса Сергіївна",
+    shortName: "Голда Л. С.",
+    address: "23600, вул. Визволення, 15, м. Тульчин, Вінницька область,Україна",
+    iban: "UA 79 3003 3500 0000 0026 0094 7250 7",
+    bank: 'АТ "Райффайзен Банк"',
+    mfo: "300335",
+    rnokpp: "2588607763",
+    phone: "+380985249888"
+  },
+  fop_vladyslav: {
+    key: "fop_vladyslav",
+    shortLabel: "Владислав",
+    fullName: "ФОП Голда Владислав Миколайович",
+    shortName: "Голда В. М.",
+    address: "23609, вул. Садова, 26, с. Нестерварка, Вінницька область,Україна",
+    iban: "UA 60 3003 3500 0000 0260 0724 8938 2",
+    bank: 'АТ "Райффайзен Банк"',
+    mfo: "300335",
+    rnokpp: "3713407892",
+    phone: "+380985249888"
+  }
+};
+
+// ══════════════════════ ОКРЕМІ ЛІЧИЛЬНИКИ ══════════════════════
+let invCounters = {
+  fop_larisa: 141,      // Наступний 142-РД
+  fop_vladyslav: 104    // Наступний 105-РД
+};
+
+let noteCounters = {
+  fop_larisa: 75,       // Наступний 76Д
+  fop_vladyslav: 104    // Можна скоригувати за потреби
+};
+
 // ══════════════════════ АВТОРИЗАЦІЯ (ПІН-КОД) ══════════════════════
 const CORRECT_PIN = '7788';
 
@@ -370,7 +435,12 @@ function cloudSave(){
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer=setTimeout(async()=>{
     try{
-      const data = JSON.stringify({invLastNum,invDB,noteLastNum,noteDB});
+      const data = JSON.stringify({
+        invCounters,
+        invDB,
+        noteCounters,
+        noteDB
+      });
       await fetch(APP_URL, {
         method: 'POST',
         body: data,
@@ -395,11 +465,22 @@ async function cloudLoad(){
   try {
     const response = await fetch(APP_URL);
     const data = await response.json();
-    if (data && data.invDB) {
-      if(Array.isArray(data.invDB))invDB=data.invDB;
-      if(data.invLastNum)invLastNum=data.invLastNum;
-      if(Array.isArray(data.noteDB))noteDB=data.noteDB;
-      if(data.noteLastNum)noteLastNum=data.noteLastNum;
+    if (data) {
+      if (Array.isArray(data.invDB)) invDB = data.invDB;
+      if (Array.isArray(data.noteDB)) noteDB = data.noteDB;
+
+      // Підтримка оновлених лічильників
+      if (data.invCounters) {
+        invCounters = Object.assign(invCounters, data.invCounters);
+      } else if (data.invLastNum) {
+        invCounters.fop_larisa = data.invLastNum;
+      }
+
+      if (data.noteCounters) {
+        noteCounters = Object.assign(noteCounters, data.noteCounters);
+      } else if (data.noteLastNum) {
+        noteCounters.fop_larisa = data.noteLastNum;
+      }
     }
     invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);
     noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);
@@ -413,7 +494,6 @@ async function cloudLoad(){
   }
 }
 
-// Завантаження PDF на Google Диск через Apps Script
 async function uploadPdfToDrive(fileName, html) {
   if (!APP_URL) return null;
   try {
@@ -431,18 +511,34 @@ async function uploadPdfToDrive(fileName, html) {
 }
 
 // ═══════════════════════ РАХУНКИ ═══════════════════════
-let invDB=[
-  {"num":"122-РД","date":"04 серпня 2026","payer":"ФОП Томишинець Василь Іванович","code":"2086503699","items":[{"name":"Піскоструминний (піскоструйний) пістолет із соплом","unit":"шт.","qty":2,"price":1900,"sum":3800}],"subtotal":3800,"discount":0,"total":3800,"contract":"","purpose":""},
-  {"num":"123-РД","date":"04 серпня 2026","payer":"________________________","code":"________________","items":[{"name":"Камера гідроабразивного очищення GA-95-AIR","unit":"шт.","qty":1,"price":168750,"sum":168750}],"subtotal":168750,"discount":0,"total":168750,"contract":"","purpose":""},
-  {"num":"124-РД","date":"06 серпня 2026","payer":"__________________________","code":"_________","items":[{"name":"Камера гідроабразивного очищення “Aquablast GA-120-JET”","unit":"шт.","qty":1,"price":213750,"sum":213750},{"name":"Система рециркуляції","unit":"шт.","qty":1,"price":20110,"sum":20110},{"name":"Рукавички з підкладкою","unit":"шт.","qty":1,"price":1118,"sum":1118}],"subtotal":234978,"discount":0,"total":234978,"contract":"84","purpose":"Призначення платежу:\nЗавдаток у розмірі 40% від загальної вартості обладнання\nза Договором купівлі продажу №84 від 06 серпня 2026 року\nЗагальна вартість договору - 234 978,00 грн\nСума завдатку (40%) - 93 991,20 грн\nРешта 60% (140 986,80 грн) сплачується після закінчення виготовлення обладнання"},
-  {"num":"125-РД","date":"6 серпня 2026","payer":"__________________________________","code":"___________","items":[{"name":"Камера гідроабразивного очищення “Aquablast GA-120-JET”","unit":"шт.","qty":1,"price":213750,"sum":213750},{"name":"Система рециркуляції","unit":"шт.","qty":1,"price":20110,"sum":20110},{"name":"Рукавички з підкладкою","unit":"шт.","qty":1,"price":1118,"sum":1118}],"subtotal":234978,"discount":0,"total":234978,"contract":"85","purpose":"Призначення платежу:\nЗавдаток у розмірі 40% від загальної вартості обладнання\nза Договором купівлі продажу №85 від 6 серпня 2026 року\nЗагальна вартість договору - 234 978,00 грн\nСума завдатку (40%) - 93 991,20 грн\nРешта 60% (140 986,80 грн) сплачується після закінчення виготовлення обладнання"},
-  {"num":"127-РД","date":"18 серпня 2026","payer":"ФОП Жукова Ольга Олександрівна","code":"3198318846","items":[{"name":"Гумові рукавички (підсилені) для піскоструминних камер і аквабластингу, 680мм","unit":"шт.","qty":2,"price":1590,"sum":3180}],"subtotal":3180,"discount":0,"total":3180,"contract":"","purpose":""},
-  {"num":"129-РД","date":"25 липня 2026","payer":"ТОВАРИСТВО З ОБМЕЖЕНОЮ ВІДПОВІДАЛЬНІСТЮ «ТУРБО-ВЕСТ»","code":"439297119152","items":[{"name":"Гумові рукавички (підсилені) для піскоструминних камер і аквабластингу, 680мм","unit":"шт.","qty":1,"price":1590,"sum":1590}],"subtotal":1590,"discount":0,"total":1590,"contract":"","purpose":""}
-];
-let invLastNum=129;
+let invDB=[];
 
-function invSetLastNum(v){const n=parseInt(v);if(!isNaN(n)&&n>0){invLastNum=n;invUpdateBadge();cloudSave();}}
-function invUpdateBadge(){document.getElementById('inv-next-num').textContent=(invLastNum+1)+'-РД';document.getElementById('inv-last-num-input').value=invLastNum;}
+function getInvCurrentFopKey(){
+  return document.getElementById('inv-fop-select')?.value || 'fop_larisa';
+}
+
+function invOnFopChange(){
+  invUpdateBadge();
+}
+
+function invSetLastNum(v){
+  const n = parseInt(v);
+  const fopKey = getInvCurrentFopKey();
+  if(!isNaN(n) && n > 0){
+    invCounters[fopKey] = n;
+    invUpdateBadge();
+    cloudSave();
+  }
+}
+
+function invUpdateBadge(){
+  const fopKey = getInvCurrentFopKey();
+  const fop = FOPS[fopKey];
+  const last = invCounters[fopKey] || 0;
+  document.getElementById('inv-num-label').textContent = `Наступний номер рахунку (${fop.shortLabel}):`;
+  document.getElementById('inv-next-num').textContent = (last + 1) + '-РД';
+  document.getElementById('inv-last-num-input').value = last;
+}
 
 const invRS={};let invRid=0;
 function invAddRow(nm='',un='шт.',q=1,pr=0){
@@ -503,8 +599,8 @@ function invUpdatePreview(){
 }
 
 function invSetDbBtns(on){document.getElementById('inv-bcsv').disabled=!on;document.getElementById('inv-bjson').disabled=!on;}
-function invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose,pdfUrl=''){
-  invDB.push({num,date:`${day} ${mon} ${yr}`,payer,code,items:[...items],subtotal,discount,total,contract:ct,purpose,pdfUrl});
+function invSaveToDb(fopKey,fopName,num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose,pdfUrl=''){
+  invDB.push({fopKey,fopName,num,date:`${day} ${mon} ${yr}`,payer,code,items:[...items],subtotal,discount,total,contract:ct,purpose,pdfUrl});
   invRenderDB();invSetDbBtns(true);cloudSave();
   noteRefreshInvoiceSelector();
 }
@@ -523,13 +619,20 @@ function invRenderDB(){
   const cnt=invDB.length;
   document.getElementById('inv-db-count').textContent=cnt+' записів';
   if(!cnt){document.getElementById('inv-db-body').innerHTML='<div class="empty-db">Ще немає збережених рахунків.</div>';return;}
-  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Платник</th><th>Договір</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>ФОП</th><th>Платник</th><th>Договір</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
   invDB.forEach((r, idx)=>{
     const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
     const pdfBtn = r.pdfUrl ? `<a href="${r.pdfUrl}" target="_blank" class="btn-dl-pdf" title="Завантажити копію з Диска">📥 PDF</a>` : '';
+    
+    // Визначення ФОП
+    const isVlad = r.fopKey === 'fop_vladyslav' || (r.fopName && r.fopName.includes('Владислав'));
+    const fopLabel = isVlad ? 'Владислав' : 'Лариса';
+    const badgeCls = isVlad ? 'fop-badge-vlad' : 'fop-badge-larisa';
+
     h+=`<tr>
       <td><b>${r.num}</b></td>
       <td style="white-space:nowrap">${r.date}</td>
+      <td style="white-space:nowrap"><span class="fop-badge ${badgeCls}">${fopLabel}</span></td>
       <td>${r.payer}</td>
       <td>${r.contract||'—'}</td>
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
@@ -542,12 +645,15 @@ function invRenderDB(){
   });
   document.getElementById('inv-db-body').innerHTML=h+'</tbody></table>';
 }
+
 function invClearDB(){if(!confirm('Очистити всю базу рахунків?'))return;invDB=[];invRenderDB();invSetDbBtns(false);cloudSave();noteRefreshInvoiceSelector();}
+
 function invExportJSON(){
-  const data={lastNum:invLastNum,invoices:invDB};
+  const data={invCounters,invoices:invDB};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Рахунки_Голда.json';a.click();
 }
+
 function invImportDB(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
@@ -556,22 +662,25 @@ function invImportDB(e){
       const data=JSON.parse(ev.target.result);
       if(data.invoices&&Array.isArray(data.invoices)){
         invDB=data.invoices;
-        if(data.lastNum)invLastNum=data.lastNum;
+        if(data.invCounters) invCounters = Object.assign(invCounters, data.invCounters);
+        else if(data.lastNum) invCounters.fop_larisa = data.lastNum;
         invUpdateBadge();invRenderDB();invSetDbBtns(invDB.length>0);cloudSave();noteRefreshInvoiceSelector();
-        alert(`✓ Завантажено ${invDB.length} рахунків. Останній номер: ${invLastNum}-РД`);
+        alert(`✓ Завантажено ${invDB.length} рахунків.`);
       }else{alert('Невірний формат файлу.');}
     }catch(err){alert('Помилка: '+err.message);}
   };
   reader.readAsText(file);e.target.value='';
 }
+
 function invExportCSV(){
   if(!invDB.length)return;
   const BOM='\uFEFF';
-  const hdr=['№ рахунку','Дата','Платник','РНОКПП','Договір №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Сума без знижки','Знижка','Загальна сума'];
+  const hdr=['№ рахунку','ФОП','Дата','Платник','РНОКПП','Договір №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Сума без знижки','Знижка','Загальна сума'];
   const rows=[hdr];
   invDB.forEach(r=>{
-    if(!r.items.length){rows.push([r.num,r.date,r.payer,r.code,r.contract||'','','','','','',r.subtotal||r.total,r.discount||0,r.total]);}
-    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?r.date:'',i===0?r.payer:'',i===0?r.code:'',i===0?(r.contract||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?(r.subtotal||r.total):'',i===0?(r.discount||0):'',i===0?r.total:'']);});}
+    const fopText = (r.fopKey==='fop_vladyslav'||(r.fopName&&r.fopName.includes('Владислав')))?'ФОП Голда В. М.':'ФОП Голда Л. С.';
+    if(!r.items.length){rows.push([r.num,fopText,r.date,r.payer,r.code,r.contract||'','','','','','',r.subtotal||r.total,r.discount||0,r.total]);}
+    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?fopText:'',i===0?r.date:'',i===0?r.payer:'',i===0?r.code:'',i===0?(r.contract||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?(r.subtotal||r.total):'',i===0?(r.discount||0):'',i===0?r.total:'']);});}
   });
   const csv=BOM+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
@@ -579,6 +688,9 @@ function invExportCSV(){
 }
 
 async function invMakePDF(){
+  const fopKey = getInvCurrentFopKey();
+  const currentFop = FOPS[fopKey];
+
   const items=invGetItems();
   const subtotal=invGetSubtotal();
   const discount=invGetDiscount();
@@ -592,12 +704,15 @@ async function invMakePDF(){
   const purpose=ct?document.getElementById('inv-payment-purpose').value.trim():'';
   if(!day||!mon||!yr){alert('Заповніть дату!');return;}
   if(!payer){alert('Заповніть назву платника!');return;}
-  invLastNum++;const num=invLastNum+'-РД';invUpdateBadge();
+
+  invCounters[fopKey]++;
+  const num=invCounters[fopKey]+'-РД';
+  invUpdateBadge();
+
   const{hWords,hForm,kInt,kWords}=amtP(total);
   const hStr=String(Math.floor(total)).replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
   const payerLine=code?`${payer} (${code})`:`${payer}`;
   const allRows=[...items];while(allRows.length<7)allRows.push(null);
-  
   const dayPad = String(day).padStart(2, '0');
 
   const rowsHTML=allRows.map(it=>it?`<tr>
@@ -659,20 +774,20 @@ table.tbl td{border:0.5pt solid #000;padding:1px 3px;font-size:8pt}
 <div class="header">
   <div class="left">
     <div class="lr tall"><div class="lbl">Продавець<span class="lbl-sub">(виконавець)</span></div>
-      <div class="val-wrap"><div class="ul b">ФОП Голда Лариса Сергіївна</div></div></div>
+      <div class="val-wrap"><div class="ul b">${currentFop.fullName}</div></div></div>
     <div class="lr"><div class="lbl">Адреса</div>
-      <div class="val-wrap"><div class="ul it">23600, вул. Визволення, 15, м. Тульчин, Вінницька область,Україна</div></div></div>
+      <div class="val-wrap"><div class="ul it">${currentFop.address}</div></div></div>
     <div class="lr"><div class="lbl">IBAN</div>
-      <div class="val-wrap"><div class="ul">UA 79 3003 3500 0000 0026 0094 7250 7</div></div></div>
+      <div class="val-wrap"><div class="ul">${currentFop.iban}</div></div></div>
     <div class="lr tall"><div class="lbl">в</div>
       <div class="val-wrap">
-        <div class="ul">АТ "Райффайзен Банк"</div>
-        <div class="mfo-row"><span class="mfo-gap"></span><span class="mfo-lbl">МФО</span><span class="mfo-val">300335</span></div>
+        <div class="ul">${currentFop.bank}</div>
+        <div class="mfo-row"><span class="mfo-gap"></span><span class="mfo-lbl">МФО</span><span class="mfo-val">${currentFop.mfo}</span></div>
       </div></div>
     <div class="lr"><div class="lbl">р.н.о.к.п.п.</div>
-      <div class="val-wrap"><div class="ul">2588607763</div></div></div>
+      <div class="val-wrap"><div class="ul">${currentFop.rnokpp}</div></div></div>
     <div class="lr"><div class="lbl">Телефон</div>
-      <div class="val-wrap"><div class="ul">+380985249888</div></div></div>
+      <div class="val-wrap"><div class="ul">${currentFop.phone}</div></div></div>
   </div>
   <div class="right">
     <div class="rtitle">РАХУНОК-ФАКТУРА</div>
@@ -702,7 +817,7 @@ ${discountRows}
 </div>
 <div style="font-size:7pt;font-style:italic;margin-top:0.5mm">Примітка:</div>
 ${purposeHTML}
-<div class="sign"><b>ФОП</b><span class="sign-line">&nbsp;ФОП Голда Лариса Сергіївна</span>
+<div class="sign"><b>ФОП</b><span class="sign-line">&nbsp;${currentFop.fullName}</span>
   <br><br><span style="font-size:8pt">м.п.</span></div>
 <script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
@@ -710,7 +825,7 @@ ${purposeHTML}
   setSync('busy', 'Збереження PDF на Google Диск...');
   const pdfUrl = await uploadPdfToDrive(`Рахунок_${num}`, html);
 
-  invSaveToDb(num,day,mon,yr,payer,code,items,subtotal,discount,total,ct,purpose,pdfUrl);
+  invSaveToDb(fopKey, currentFop.fullName, num, day, mon, yr, payer, code, items, subtotal, discount, total, ct, purpose, pdfUrl);
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -723,12 +838,32 @@ invAddRow();
 
 // ═══════════════════════ НАКЛАДНІ ═══════════════════════
 let noteDB=[];
-let noteLastNum=75;
 
-function noteSetLastNum(v){const n=parseInt(v);if(!isNaN(n)&&n>0){noteLastNum=n;noteUpdateBadge();cloudSave();}}
+function getNoteCurrentFopKey(){
+  return document.getElementById('note-fop-select')?.value || 'fop_larisa';
+}
+
+function noteOnFopChange(){
+  noteUpdateBadge();
+}
+
+function noteSetLastNum(v){
+  const n = parseInt(v);
+  const fopKey = getNoteCurrentFopKey();
+  if(!isNaN(n) && n > 0){
+    noteCounters[fopKey] = n;
+    noteUpdateBadge();
+    cloudSave();
+  }
+}
+
 function noteUpdateBadge(){
-  document.getElementById('note-next-num').textContent=(noteLastNum+1)+'Д';
-  document.getElementById('note-last-num-input').value=noteLastNum;
+  const fopKey = getNoteCurrentFopKey();
+  const fop = FOPS[fopKey];
+  const last = noteCounters[fopKey] || 0;
+  document.getElementById('note-num-label').textContent = `Наступний номер накладної (${fop.shortLabel}):`;
+  document.getElementById('note-next-num').textContent = (last + 1) + 'Д';
+  document.getElementById('note-last-num-input').value = last;
 }
 
 function noteRefreshInvoiceSelector(){
@@ -738,7 +873,9 @@ function noteRefreshInvoiceSelector(){
   invDB.forEach((inv,i)=>{
     const opt=document.createElement('option');
     opt.value=i;
-    opt.textContent=`${inv.num} від ${inv.date} — ${inv.payer} (${fD(inv.total)} грн)`;
+    const isVlad = inv.fopKey === 'fop_vladyslav' || (inv.fopName && inv.fopName.includes('Владислав'));
+    const fopTag = isVlad ? '[Владислав]' : '[Лариса]';
+    opt.textContent=`${fopTag} ${inv.num} від ${inv.date} — ${inv.payer} (${fD(inv.total)} грн)`;
     sel.appendChild(opt);
   });
   if(invDB.length){
@@ -763,6 +900,12 @@ function linkInvoice(){
   }
   const inv=invDB[parseInt(idx)];
   if(!inv)return;
+  
+  // Автоматично обираємо потрібного ФОП при підтягуванні
+  const isVlad = inv.fopKey === 'fop_vladyslav' || (inv.fopName && inv.fopName.includes('Владислав'));
+  document.getElementById('note-fop-select').value = isVlad ? 'fop_vladyslav' : 'fop_larisa';
+  noteUpdateBadge();
+
   document.getElementById('note-buyer').value=inv.payer||'';
   document.getElementById('note-buyer-code').value=inv.code||'';
   noteClearRows();
@@ -804,8 +947,8 @@ function noteRc(){
 noteAddRow();
 
 function noteSetDbBtns(on){document.getElementById('note-bcsv').disabled=!on;document.getElementById('note-bjson').disabled=!on;}
-function noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv,pdfUrl=''){
-  noteDB.push({num,date:`${day} ${mon} ${yr}`,buyer,bcode,items:[...items],total,linkedInv,pdfUrl});
+function noteSaveToDb(fopKey,fopName,num,day,mon,yr,buyer,bcode,items,total,linkedInv,pdfUrl=''){
+  noteDB.push({fopKey,fopName,num,date:`${day} ${mon} ${yr}`,buyer,bcode,items:[...items],total,linkedInv,pdfUrl});
   noteRenderDB();noteSetDbBtns(true);cloudSave();
 }
 
@@ -822,13 +965,19 @@ function noteRenderDB(){
   const cnt=noteDB.length;
   document.getElementById('note-db-count').textContent=cnt+' записів';
   if(!cnt){document.getElementById('note-db-body').innerHTML='<div class="empty-db">Ще немає збережених накладних.</div>';return;}
-  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Рахунок</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
+  let h=`<table class="db"><thead><tr><th>№</th><th>Дата</th><th>ФОП</th><th>Покупець</th><th>Рахунок</th><th>Товари</th><th style="text-align:right">Сума, грн</th><th style="text-align:center">Дії</th></tr></thead><tbody>`;
   noteDB.forEach((r, idx)=>{
     const g=r.items.map(it=>`${it.name} (${it.qty} ${it.unit})`).join('; ')||'—';
     const pdfBtn = r.pdfUrl ? `<a href="${r.pdfUrl}" target="_blank" class="btn-dl-pdf" title="Завантажити копію з Диска">📥 PDF</a>` : '';
+    
+    const isVlad = r.fopKey === 'fop_vladyslav' || (r.fopName && r.fopName.includes('Владислав'));
+    const fopLabel = isVlad ? 'Владислав' : 'Лариса';
+    const badgeCls = isVlad ? 'fop-badge-vlad' : 'fop-badge-larisa';
+
     h+=`<tr>
       <td><b>${r.num}</b></td>
       <td style="white-space:nowrap">${r.date}</td>
+      <td style="white-space:nowrap"><span class="fop-badge ${badgeCls}">${fopLabel}</span></td>
       <td>${r.buyer}</td>
       <td>${r.linkedInv||'—'}</td>
       <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${g}">${g}</td>
@@ -841,12 +990,15 @@ function noteRenderDB(){
   });
   document.getElementById('note-db-body').innerHTML=h+'</tbody></table>';
 }
+
 function noteClearDB(){if(!confirm('Очистити базу накладних?'))return;noteDB=[];noteRenderDB();noteSetDbBtns(false);cloudSave();}
+
 function noteExportJSON(){
-  const data={lastNum:noteLastNum,notes:noteDB};
+  const data={noteCounters,notes:noteDB};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Накладні_Голда.json';a.click();
 }
+
 function noteImportDB(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
@@ -855,22 +1007,25 @@ function noteImportDB(e){
       const data=JSON.parse(ev.target.result);
       if(data.notes&&Array.isArray(data.notes)){
         noteDB=data.notes;
-        if(data.lastNum)noteLastNum=data.lastNum;
+        if(data.noteCounters) noteCounters = Object.assign(noteCounters, data.noteCounters);
+        else if(data.lastNum) noteCounters.fop_larisa = data.lastNum;
         noteUpdateBadge();noteRenderDB();noteSetDbBtns(noteDB.length>0);cloudSave();
-        alert(`✓ Завантажено ${noteDB.length} накладних. Останній №: ${noteLastNum}Д`);
+        alert(`✓ Завантажено ${noteDB.length} накладних.`);
       }else{alert('Невірний формат файлу.');}
     }catch(err){alert('Помилка: '+err.message);}
   };
   reader.readAsText(file);e.target.value='';
 }
+
 function noteExportCSV(){
   if(!noteDB.length)return;
   const BOM='\uFEFF';
-  const hdr=['№ накладної','Дата','Покупець','Код','Рахунок №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Загальна сума'];
+  const hdr=['№ накладної','ФОП','Дата','Покупець','Код','Рахунок №','Найменування','Одиниця','К-сть','Ціна','Сума рядка','Загальна сума'];
   const rows=[hdr];
   noteDB.forEach(r=>{
-    if(!r.items.length){rows.push([r.num,r.date,r.buyer,r.bcode,r.linkedInv||'','','','','','',r.total]);}
-    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?r.date:'',i===0?r.buyer:'',i===0?r.bcode:'',i===0?(r.linkedInv||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?r.total:'']);});}
+    const fopText = (r.fopKey==='fop_vladyslav'||(r.fopName&&r.fopName.includes('Владислав')))?'ФОП Голда В. М.':'ФОП Голда Л. С.';
+    if(!r.items.length){rows.push([r.num,fopText,r.date,r.buyer,r.bcode,r.linkedInv||'','','','','','',r.total]);}
+    else{r.items.forEach((it,i)=>{rows.push([i===0?r.num:'',i===0?fopText:'',i===0?r.date:'',i===0?r.buyer:'',i===0?r.bcode:'',i===0?(r.linkedInv||''):'',it.name,it.unit,it.qty,it.price,it.sum,i===0?r.total:'']);});}
   });
   const csv=BOM+rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
@@ -878,6 +1033,9 @@ function noteExportCSV(){
 }
 
 async function noteMakePDF(){
+  const fopKey = getNoteCurrentFopKey();
+  const currentFop = FOPS[fopKey];
+
   const items=noteGetItems();
   const total=noteGetTotal();
   const day=document.getElementById('note-day').value;
@@ -890,14 +1048,13 @@ async function noteMakePDF(){
   if(!day||!mon||!yr){alert('Заповніть дату!');return;}
   if(!buyer){alert('Заповніть покупця!');return;}
 
-  noteLastNum++;
-  const num=noteLastNum+'Д';
+  noteCounters[fopKey]++;
+  const num=noteCounters[fopKey]+'Д';
   noteUpdateBadge();
 
   const{hWords,hForm,kInt,kWords}=amtP(total);
   const hStr=String(Math.floor(total)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
   const buyerLine=bcode?`${buyer} (${bcode})`:`${buyer}`;
-
   const dayPad = String(day).padStart(2, '0');
 
   const allRows=[...items];while(allRows.length<7)allRows.push(null);
@@ -936,11 +1093,11 @@ table.tbl td{border:0.5pt solid #000;padding:3px 5px;font-size:9pt}
 </style></head><body>
 
 <div class="seller-block">
-  <div class="seller-line"><b>Продавець</b>:&nbsp;&nbsp;ФОП Голда Лариса Сергіївна</div>
+  <div class="seller-line"><b>Продавець</b>:&nbsp;&nbsp;${currentFop.fullName}</div>
   <div class="seller-details">
-    23600, вул. Визволення, 15, м. Тульчин, Вінницька область,<br>
-    Україна тел. +380985249888,&nbsp;&nbsp;&nbsp;р/р<br>
-    UA 79 3003 3500 0000 0026 0094 7250 7, РНОКПП: 2588607763
+    ${currentFop.address}<br>
+    тел. ${currentFop.phone},&nbsp;&nbsp;&nbsp;IBAN<br>
+    ${currentFop.iban}, РНОКПП: ${currentFop.rnokpp}
   </div>
 </div>
 
@@ -974,7 +1131,7 @@ table.tbl td{border:0.5pt solid #000;padding:3px 5px;font-size:9pt}
 
 <div class="sign-block">
   <div class="sign-col">
-    Продавець <span class="sign-line"></span>
+    Продавець <span class="sign-line">&nbsp;${currentFop.shortName}</span>
     <div class="date-line">"&nbsp;&nbsp;&nbsp;" <span style="border-bottom:0.5pt solid #000;display:inline-block;width:22mm"></span> 20&nbsp;&nbsp;р.</div>
   </div>
   <div class="sign-col">
@@ -989,7 +1146,7 @@ table.tbl td{border:0.5pt solid #000;padding:3px 5px;font-size:9pt}
   setSync('busy', 'Збереження PDF на Google Диск...');
   const pdfUrl = await uploadPdfToDrive(`Накладна_${num}`, html);
 
-  noteSaveToDb(num,day,mon,yr,buyer,bcode,items,total,linkedInv,pdfUrl);
+  noteSaveToDb(fopKey, currentFop.fullName, num, day, mon, yr, buyer, bcode, items, total, linkedInv, pdfUrl);
 
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
