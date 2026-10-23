@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Закупівлі Китай — Golda Aquablast</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:16px;max-width:1380px;margin:0 auto}
+h1{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2c3e50;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #2c3e50;display:flex;justify-content:space-between;align-items:center}
+.sec{background:#fff;border-radius:6px;padding:14px 16px;margin-bottom:12px;border:1px solid #dde2ea}
+.st{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8a96a3;margin-bottom:10px}
+.row{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px}
+.f.w2{flex:2}.f.w3{flex:3}.f.w4{flex:4}
+label{font-size:11px;color:#6b7c93;font-weight:600}
+input,select,textarea{border:1px solid #d5dae3;border-radius:4px;padding:6px 8px;font-size:12px;color:#222;background:#fafbfc;width:100%}
+input:focus,select:focus{outline:none;border-color:#2c3e50;background:#fff}
+
+/* Смуга курсів та статусу */
+.sync-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:8px 14px;margin-bottom:12px;font-size:11px;flex-wrap:wrap;gap:10px}
+.sync-status{display:flex;align-items:center;gap:8px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.sync-dot.ok{background:#27ae60}
+.sync-dot.busy{background:#f0ad4e;animation:pulse 1s infinite}
+.sync-dot.off{background:#e74c3c}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.rates-inputs{display:flex;gap:12px;align-items:center}
+.rate-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#1a6fa8}
+.rate-item input{width:65px;text-align:center;padding:3px 5px;font-weight:700}
+
+/* Блок фінансової аналітики */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;margin-bottom:12px}
+.stat-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:12px 14px}
+.stat-card .lbl{font-size:10px;font-weight:700;color:#8a96a3;text-transform:uppercase;margin-bottom:4px}
+.stat-card .val{font-size:18px;font-weight:700;color:#2c3e50}
+.stat-card .sub{font-size:10px;color:#5a8db5;margin-top:2px}
+
+/* Імпорт накладної */
+.import-box{background:#fdf9ed;border:1px dashed #f0c960;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.btn-upload{background:#217346;color:#fff;padding:7px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-upload:hover{background:#185c38}
+
+/* Кнопки */
+.btn{padding:8px 14px;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-primary{background:#2c3e50;color:#fff}
+.btn-primary:hover{background:#1a252f}
+.btn-clear{background:#fdf0f0;color:#c0392b;border:1px solid #f0c0c0}
+
+/* Фільтри та вкладки */
+.filter-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.ftab{padding:6px 12px;border-radius:4px;border:1px solid #dde2ea;background:#fff;font-size:11px;font-weight:700;color:#6b7c93;cursor:pointer}
+.ftab.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
+.search-input{max-width:240px;margin-left:auto}
+
+/* Таблиця */
+table.orders-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.orders-tbl th{background:#f7f9fb;font-size:10px;font-weight:700;color:#8a96a3;padding:8px 6px;text-align:left;border-bottom:1px solid #dde2ea;text-transform:uppercase}
+table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-align:middle}
+table.orders-tbl tr:hover{background:#fcfdfd}
+tr.archived-row{opacity:0.65;background:#fafbfc}
+
+/* Фото */
+.prod-img{width:44px;height:44px;border-radius:4px;object-fit:cover;border:1px solid #dde2ea;cursor:pointer;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:18px}
+.prod-img:hover{border-color:#1a6fa8;transform:scale(1.05)}
+
+/* Бейджі статусів */
+.badge{padding:3px 6px;border-radius:4px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
+.st-ordered{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
+.st-wh-cn{background:#ffe8d6;color:#a04000;border:1px solid #fcd5b5}
+.st-transit{background:#cce5ff;color:#004085;border:1px solid #b8daff}
+.st-received{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+
+.badge-auto{background:#e8f8f0;color:#187a41;border:1px solid #a8e5c2;font-size:9px;padding:1px 4px;border-radius:3px}
+.track-link{font-family:monospace;font-size:11px;font-weight:700;color:#1a6fa8;text-decoration:none;background:#f0f2f5;padding:2px 5px;border-radius:3px}
+.track-link:hover{text-decoration:underline;background:#e2ecf5}
+.ext-link{color:#1a6fa8;text-decoration:none;font-size:11px}
+.ext-link:hover{text-decoration:underline}
+
+.calc-res{font-weight:700;color:#1a6fa8;font-size:13px}
+.calc-sub{font-size:10px;color:#8a96a3}
+.price-tag{font-weight:700;color:#27ae60;font-size:12px}
+.profit-tag{font-size:10px;color:#8a96a3}
+
+.btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px}
+.btn-icon:hover{background:#edf2f7}
+
+/* Екран авторизації */
+#auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f2f5;display:flex;justify-content:center;align-items:center;z-index:99999}
+.auth-card{background:#fff;padding:24px 28px;border-radius:8px;border:1px solid #dde2ea;width:100%;max-width:340px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.auth-card h2{font-size:15px;margin-bottom:8px;color:#2c3e50}
+.auth-card p{font-size:11px;color:#8a96a3;margin-bottom:14px}
+.auth-card input{font-size:14px;text-align:center;padding:8px;margin-bottom:12px;font-weight:600}
+.auth-err{color:#e74c3c;font-size:11px;margin-top:8px;display:none}
+
+/* Модалки */
+#edit-modal, #img-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999}
+.modal-box{background:#fff;padding:20px;border-radius:8px;width:100%;max-width:620px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:700;color:#2c3e50;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:6px}
+</style>
+</head>
+<body>
+
+<!-- ЕКРАН ВХОДУ (ЗАХИСТ СЕКРЕТНИМ КЛЮЧЕМ) -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2>🔐 Вхід у систему</h2>
+    <p>Введіть секретний ключ доступу до бази</p>
+    <input type="password" id="token-input" placeholder="Введіть ключ..." autofocus onkeypress="if(event.key==='Enter')login()">
+    <button class="btn btn-primary" style="width:100%" onclick="login()">Увійти</button>
+    <div class="auth-err" id="auth-err">Невірний ключ або помилка доступу</div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none">
+  <h1>
+    <span>📦 Закупівлі Китай · Golda Aquablast CRM</span>
+    <button class="btn" style="background:none;color:#8a96a3;font-size:11px" onclick="logout()">Вийти 🚪</button>
+  </h1>
+
+  <!-- СИНХРОНІЗАЦІЯ І КУРСИ -->
+  <div class="sync-bar">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-txt" style="font-weight:600;color:#6b7c93">Підключення до Google Таблиці...</span>
+    </div>
+    <div class="rates-inputs">
+      <span style="font-size:11px;color:#8a96a3">Курси для нових замовлень сьогодні:</span>
+      <div class="rate-item">
+        <span>1 ¥ =</span>
+        <input type="number" id="rate-cny-today" value="5.80" step="0.01" oninput="formCalc()">
+        <span>грн</span>
+      </div>
+      <div class="rate-item">
+        <span>1 $ =</span>
+        <input type="number" id="rate-usd-today" value="41.50" step="0.1" oninput="formCalc()">
+        <span>грн</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ФІНАНСОВА АНАЛІТИКА -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="lbl">Товарів у дорозі</div>
+      <div class="val" id="stat-transit-cost">0 грн</div>
+      <div class="sub" id="stat-transit-count">0 позицій пливе/летить</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">Загальна вартість закупівлі</div>
+      <div class="val" id="stat-total-cny">0 ¥</div>
+      <div class="sub" id="stat-total-items">0 одиниць товару</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">Витрати на доставку карго</div>
+      <div class="val" id="stat-ship-cost">0 грн</div>
+      <div class="sub" id="stat-ship-sub">по закритих накладних</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">Потенційний прибуток (маржа)</div>
+      <div class="val" id="stat-profit-val" style="color:#27ae60">0 грн</div>
+      <div class="sub">при розпродажу за плановою ціною</div>
+    </div>
+  </div>
+
+  <!-- ІМПОРТ НАКЛАДНОЇ КАРГО -->
+  <div class="import-box">
+    <div style="font-size:11px;color:#7a5a15">
+      <b>📥 Отримали накладну карго (Turboavia тощо)?</b>
+      <span>Завантажте файл (.xlsx / .csv) — трек-номери та вартість доставки оновляться автоматично</span>
+    </div>
+    <label class="btn-upload">
+      📄 Завантажити накладну Excel
+      <input type="file" id="file-invoice" accept=".xlsx, .xls, .csv" style="display:none" onchange="handleInvoiceUpload(event)">
+    </label>
+  </div>
+
+  <!-- ФОРМА ДОДАВАННЯ -->
+  <div class="sec">
+    <div class="st">➕ Додати нове замовлення</div>
+    
+    <div class="row">
+      <div class="f w3">
+        <label>Найменування товару *</label>
+        <input id="f-name" placeholder="напр. Сопло карбід бору 4мм">
+      </div>
+      <div class="f w2">
+        <label>Китайський трек-номер</label>
+        <input id="f-track" placeholder="напр. 435192078970166" style="font-weight:700;font-family:monospace">
+      </div>
+      <div class="f w2">
+        <label>Посилання на товар (1688 / Taobao)</label>
+        <input id="f-link" placeholder="https://detail.1688.com/...">
+      </div>
+      <div class="f w2">
+        <label>Посилання на фото товару (URL)</label>
+        <input id="f-img" placeholder="https://... або залиште порожнім">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="f">
+        <label>Кількість (шт)</label>
+        <input type="number" id="f-qty" value="1" min="1" oninput="formCalc()">
+      </div>
+      <div class="f">
+        <label>Ціна в Китаї (¥ за шт)</label>
+        <input type="number" id="f-price-cny" placeholder="0.00" step="0.01" oninput="formCalc()">
+      </div>
+      <div class="f" style="max-width:110px">
+        <label>Курс ¥ (купівля)</label>
+        <input type="number" id="f-custom-cny" step="0.01" placeholder="5.80" oninput="formCalc()">
+      </div>
+      <div class="f w2">
+        <label>Доставка (можна додати пізніше)</label>
+        <div style="display:flex;gap:4px">
+          <input type="number" id="f-ship-val" placeholder="0.00" step="0.01" oninput="formCalc()">
+          <select id="f-ship-cur" style="width:75px" onchange="formCalc()">
+            <option value="USD">$ USD</option>
+            <option value="UAH">грн</option>
+            <option value="CNY">¥ Юань</option>
+          </select>
+        </div>
+      </div>
+      <div class="f" style="max-width:110px">
+        <label>Націнка (%)</label>
+        <input type="number" id="f-markup" value="50" min="0" step="5" oninput="formCalc()">
+      </div>
+      <div class="f w2">
+        <label>Статус</label>
+        <select id="f-status">
+          <option value="ordered">🟡 Замовлено (йде по Китаю)</option>
+          <option value="wh-cn">🟠 На складі в Китаї</option>
+          <option value="transit">🔵 Відправлено в Україну</option>
+          <option value="received">🟢 Отримано</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>ETA (Прибуття)</label>
+        <input type="date" id="f-eta">
+      </div>
+      <div class="f w2" style="background:#f4f7fb;padding:6px 10px;border-radius:4px;border:1px solid #d5dae3">
+        <label style="color:#1a6fa8">Собівартість & Продаж:</label>
+        <div class="calc-res" id="f-calc-preview">0.00 грн / шт</div>
+        <div class="calc-sub" id="f-calc-sell-preview" style="color:#27ae60;font-weight:600">Ціна продажу: 0.00 грн</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-primary" onclick="addOrder()">✓ Додати замовлення</button>
+    </div>
+  </div>
+
+  <!-- ТАБЛИЦЯ І ФІЛЬТРИ -->
+  <div class="sec">
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="setFilter('active')">Активні замовлення (<span id="cnt-active">0</span>)</button>
+      <button class="ftab" onclick="setFilter('ordered')">🟡 Замовлено</button>
+      <button class="ftab" onclick="setFilter('wh-cn')">🟠 На складі CN</button>
+      <button class="ftab" onclick="setFilter('transit')">🔵 В дорозі в UA</button>
+      <button class="ftab" onclick="setFilter('received')">🟢 Отримано</button>
+      <button class="ftab" onclick="setFilter('archived')">🗄️ Архів (<span id="cnt-archived">0</span>)</button>
+      <button class="ftab" onclick="setFilter('all')">Всі</button>
+      
+      <input type="text" class="search-input" id="search-input" placeholder="🔍 Пошук за назвою або треком..." oninput="renderTable()">
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="orders-tbl">
+        <thead>
+          <tr>
+            <th style="width:48px;text-align:center">Фото</th>
+            <th>Товар & Посилання</th>
+            <th>Трек-номер (CN)</th>
+            <th style="text-align:center">К-сть</th>
+            <th>Ціна ¥ & Курс</th>
+            <th>Доставка</th>
+            <th>Собівартість / шт</th>
+            <th>Ціна продажу</th>
+            <th>Статус</th>
+            <th>ETA</th>
+            <th style="text-align:center">Дії</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛЬНЕ ВІКНО РЕДАГУВАННЯ -->
+<div id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Редагувати замовлення</div>
+    <input type="hidden" id="edit-id">
+    
+    <div class="row">
+      <div class="f w3">
+        <label>Найменування товару</label>
+        <input id="edit-name">
+      </div>
+      <div class="f w2">
+        <label>Китайський трек-номер</label>
+        <input id="edit-track" style="font-weight:700;font-family:monospace">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="f">
+        <label>Посилання на товар (1688/Taobao)</label>
+        <input id="edit-link">
+      </div>
+      <div class="f">
+        <label>Посилання на фото (URL)</label>
+        <input id="edit-img">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="f">
+        <label>Кількість (шт)</label>
+        <input type="number" id="edit-qty" min="1">
+      </div>
+      <div class="f">
+        <label>Ціна в Китаї (¥ за шт)</label>
+        <input type="number" id="edit-price-cny" step="0.01">
+      </div>
+      <div class="f">
+        <label style="color:#1a6fa8">Фіксований курс ¥</label>
+        <input type="number" id="edit-rate-cny" step="0.01" style="font-weight:700">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="f w2">
+        <label>Вартість доставки</label>
+        <div style="display:flex;gap:4px">
+          <input type="number" id="edit-ship-val" step="0.01">
+          <select id="edit-ship-cur" style="width:75px">
+            <option value="USD">$ USD</option>
+            <option value="UAH">грн</option>
+            <option value="CNY">¥</option>
+          </select>
+        </div>
+      </div>
+      <div class="f">
+        <label style="color:#1a6fa8">Курс $ (для доставки)</label>
+        <input type="number" id="edit-rate-usd" step="0.1" style="font-weight:700">
+      </div>
+      <div class="f">
+        <label>Націнка (%)</label>
+        <input type="number" id="edit-markup" step="5">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="f">
+        <label>Статус</label>
+        <select id="edit-status">
+          <option value="ordered">🟡 Замовлено</option>
+          <option value="wh-cn">🟠 На складі в Китаї</option>
+          <option value="transit">🔵 В дорозі в Україну</option>
+          <option value="received">🟢 Отримано</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>ETA (Прибуття)</label>
+        <input type="date" id="edit-eta">
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn" style="background:#eee" onclick="closeEditModal()">Скасувати</button>
+      <button class="btn btn-primary" onclick="saveEditedOrder()">Зберегти зміни</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛЬНЕ ВІКНО ПЕРЕГЛЯДУ ФОТО -->
+<div id="img-modal" onclick="this.style.display='none'">
+  <div style="background:#fff;padding:8px;border-radius:8px;max-width:90%;max-height:90%">
+    <img id="img-modal-src" style="max-width:100%;max-height:80vh;border-radius:4px;display:block">
+  </div>
+</div>
+
+<script>
+// ══════════════════════ ПОСИЛАННЯ НА GOOGLE APPS SCRIPT ══════════════════════
+// Вставте сюди URL після розгортання в Google Таблиці
+const APP_URL = "https://script.google.com/macros/s/AKfycbzZvxKfM1vkFAODhWd5YbK7JzCBL4ynUq25pjHTJySMxE13h0Z2dICUICKcFq0QgBto/exec";
+
+let userToken = "";
+let orders = [];
+let currentFilter = "active";
+
+// ══════════════════════ АВТОРИЗАЦІЯ ══════════════════════
+function checkSavedAuth() {
+  const savedToken = localStorage.getItem("golda_china_token");
+  if (savedToken) {
+    userToken = savedToken;
+    document.getElementById("auth-overlay").style.display = "none";
+    document.getElementById("app-container").style.display = "block";
+    cloudLoad();
+  }
+}
+
+async function login() {
+  const token = document.getElementById("token-input").value.trim();
+  if (!token) return;
+  userToken = token;
+  
+  setSync("busy", "Перевірка доступу...");
+  try {
+    const res = await fetch(`${APP_URL}?token=${encodeURIComponent(userToken)}`);
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById("auth-err").style.display = "block";
+      setSync("off", "Помилка авторизації");
+      return;
+    }
+    localStorage.setItem("golda_china_token", userToken);
+    document.getElementById("auth-overlay").style.display = "none";
+    document.getElementById("app-container").style.display = "block";
+    orders = data.orders || [];
+    renderTable();
+    updateAnalytics();
+    setSync("ok", `Синхронізовано · ${orders.length} записів`);
+  } catch(e) {
+    localStorage.setItem("golda_china_token", userToken);
+    document.getElementById("auth-overlay").style.display = "none";
+    document.getElementById("app-container").style.display = "block";
+    initLocalDemo();
+  }
+}
+
+function logout() {
+  localStorage.removeItem("golda_china_token");
+  location.reload();
+}
+
+function initLocalDemo() {
+  const local = localStorage.getItem("golda_china_orders_offline");
+  if (local) {
+    try { orders = JSON.parse(local); } catch(e){}
+  }
+  renderTable();
+  updateAnalytics();
+  setSync("ok", "Локальний режим (без хмари)");
+}
+
+// ══════════════════════ ХМАРНА СИНХРОНІЗАЦІЯ ══════════════════════
+function setSync(cls, txt) {
+  const d = document.getElementById("sync-dot");
+  const t = document.getElementById("sync-txt");
+  if (d) d.className = "sync-dot" + (cls ? " " + cls : "");
+  if (t) t.textContent = txt;
+}
+
+let cloudSaveTimer = null;
+function cloudSave() {
+  localStorage.setItem("golda_china_orders_offline", JSON.stringify(orders));
+  renderTable();
+  updateAnalytics();
+
+  if (!APP_URL || APP_URL === "ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ") {
+    setSync("ok", "Збережено локально");
+    return;
+  }
+
+  setSync("busy", "Збереження в Google Таблицю...");
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(async () => {
+    try {
+      await fetch(APP_URL, {
+        method: "POST",
+        body: JSON.stringify({ token: userToken, orders }),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+      });
+      setSync("ok", `Синхронізовано з Google Таблицею · ${orders.length} замовлень`);
+    } catch(err) {
+      setSync("off", "Помилка збереження в хмару");
+    }
+  }, 1000);
+}
+
+async function cloudLoad() {
+  if (!APP_URL || APP_URL === "ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ") {
+    initLocalDemo();
+    return;
+  }
+
+  setSync("busy", "Завантаження з Google Таблиці...");
+  try {
+    const res = await fetch(`${APP_URL}?token=${encodeURIComponent(userToken)}`);
+    const data = await res.json();
+    if (data.orders) orders = data.orders;
+    renderTable();
+    updateAnalytics();
+    setSync("ok", `Синхронізовано · ${orders.length} замовлень`);
+  } catch(err) {
+    initLocalDemo();
+  }
+}
+
+// ══════════════════════ РОЗРАХУНКИ І КУРСИ ══════════════════════
+function getTodayRates() {
+  return {
+    cny: parseFloat(document.getElementById("rate-cny-today").value) || 5.80,
+    usd: parseFloat(document.getElementById("rate-usd-today").value) || 41.50
+  };
+}
+
+function shipToUah(item) {
+  const val = item.shippingVal;
+  const cur = item.shippingCur;
+  if (!val || isNaN(val)) return 0;
+  if (cur === "USD") return val * (item.rateUsd || 41.50);
+  if (cur === "CNY") return val * (item.rateCny || 5.80);
+  return val;
+}
+
+function calcUnitCost(item) {
+  const itemUah = (item.priceCny || 0) * (item.rateCny || 5.80);
+  const totalShipUah = shipToUah(item);
+  const shipPerUnit = (item.qty > 0) ? (totalShipUah / item.qty) : 0;
+  return itemUah + shipPerUnit;
+}
+
+function formCalc() {
+  const today = getTodayRates();
+  const customCny = parseFloat(document.getElementById("f-custom-cny").value);
+  const rateCny = (!isNaN(customCny) && customCny > 0) ? customCny : today.cny;
+  const rateUsd = today.usd;
+
+  const qty = parseFloat(document.getElementById("f-qty").value) || 1;
+  const priceCny = parseFloat(document.getElementById("f-price-cny").value) || 0;
+  const shipVal = parseFloat(document.getElementById("f-ship-val").value) || 0;
+  const shipCur = document.getElementById("f-ship-cur").value;
+  const markup = parseFloat(document.getElementById("f-markup").value) || 0;
+
+  const itemUah = priceCny * rateCny;
+  let shipUah = (shipCur === "USD") ? shipVal * rateUsd : (shipCur === "CNY" ? shipVal * rateCny : shipVal);
+  const unitCost = itemUah + (qty > 0 ? shipUah / qty : 0);
+  const sellPrice = unitCost * (1 + markup / 100);
+
+  document.getElementById("f-calc-preview").textContent = `${unitCost.toFixed(2)} грн / шт`;
+  document.getElementById("f-calc-sell-preview").textContent = `Ціна продажу (+${markup}%): ${sellPrice.toFixed(2)} грн`;
+}
+
+// ══════════════════════ ФІНАНСОВА АНАЛІТИКА ══════════════════════
+function updateAnalytics() {
+  const activeOrders = orders.filter(o => !o.isArchived);
+  
+  let transitCost = 0;
+  let transitCount = 0;
+  let totalCny = 0;
+  let totalItems = 0;
+  let shipCost = 0;
+  let potentialProfit = 0;
+
+  activeOrders.forEach(o => {
+    const unitCost = calcUnitCost(o);
+    const qty = o.qty || 1;
+    const itemTotalUah = unitCost * qty;
+
+    totalCny += (o.priceCny || 0) * qty;
+    totalItems += qty;
+    shipCost += shipToUah(o);
+
+    if (o.status === 'transit' || o.status === 'wh-cn' || o.status === 'ordered') {
+      transitCost += itemTotalUah;
+      transitCount++;
+    }
+
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    potentialProfit += (sellPrice - unitCost) * qty;
+  });
+
+  document.getElementById("stat-transit-cost").textContent = transitCost.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
+  document.getElementById("stat-transit-count").textContent = `${transitCount} замовлень у процесі`;
+
+  document.getElementById("stat-total-cny").textContent = totalCny.toLocaleString("uk-UA", {maximumFractionDigits:1}) + " ¥";
+  document.getElementById("stat-total-items").textContent = `${totalItems} шт. у замовленнях`;
+
+  document.getElementById("stat-ship-cost").textContent = shipCost.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
+  document.getElementById("stat-profit-val").textContent = "+" + potentialProfit.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
+
+  document.getElementById("cnt-active").textContent = activeOrders.length;
+  document.getElementById("cnt-archived").textContent = orders.filter(o => o.isArchived).length;
+}
+
+// ══════════════════════ ДОДАВАННЯ ТА КЕРУВАННЯ ══════════════════════
+function addOrder() {
+  const name = document.getElementById("f-name").value.trim();
+  const track = document.getElementById("f-track").value.trim();
+  const link = document.getElementById("f-link").value.trim();
+  const img = document.getElementById("f-img").value.trim();
+  const qty = parseFloat(document.getElementById("f-qty").value) || 1;
+  const priceCny = parseFloat(document.getElementById("f-price-cny").value) || 0;
+  
+  const today = getTodayRates();
+  const customCny = parseFloat(document.getElementById("f-custom-cny").value);
+  const lockedRateCny = (!isNaN(customCny) && customCny > 0) ? customCny : today.cny;
+  const lockedRateUsd = today.usd;
+
+  const shipVal = parseFloat(document.getElementById("f-ship-val").value) || 0;
+  const shipCur = document.getElementById("f-ship-cur").value;
+  const markup = parseFloat(document.getElementById("f-markup").value) || 50;
+  const status = document.getElementById("f-status").value;
+  const eta = document.getElementById("f-eta").value;
+
+  if (!name) { alert("Введіть найменування товару!"); return; }
+
+  orders.unshift({
+    id: Date.now(),
+    name,
+    track,
+    link,
+    img,
+    qty,
+    priceCny,
+    rateCny: lockedRateCny,
+    shippingVal: shipVal,
+    shippingCur: shipCur,
+    rateUsd: lockedRateUsd,
+    markup,
+    status,
+    eta,
+    isArchived: false,
+    isAutoShip: false
+  });
+
+  cloudSave();
+
+  document.getElementById("f-name").value = "";
+  document.getElementById("f-track").value = "";
+  document.getElementById("f-link").value = "";
+  document.getElementById("f-img").value = "";
+  document.getElementById("f-price-cny").value = "";
+  document.getElementById("f-ship-val").value = "";
+  document.getElementById("f-eta").value = "";
+  formCalc();
+}
+
+function toggleArchive(id) {
+  const o = orders.find(x => x.id === id);
+  if (o) {
+    o.isArchived = !o.isArchived;
+    cloudSave();
+  }
+}
+
+function deleteOrder(id) {
+  if (!confirm("Видалити це замовлення з бази?")) return;
+  orders = orders.filter(o => o.id !== id);
+  cloudSave();
+}
+
+function openEditModal(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  document.getElementById("edit-id").value = o.id;
+  document.getElementById("edit-name").value = o.name || "";
+  document.getElementById("edit-track").value = o.track || "";
+  document.getElementById("edit-link").value = o.link || "";
+  document.getElementById("edit-img").value = o.img || "";
+  document.getElementById("edit-qty").value = o.qty || 1;
+  document.getElementById("edit-price-cny").value = o.priceCny || "";
+  document.getElementById("edit-rate-cny").value = o.rateCny || 5.80;
+  document.getElementById("edit-ship-val").value = o.shippingVal || "";
+  document.getElementById("edit-ship-cur").value = o.shippingCur || "USD";
+  document.getElementById("edit-rate-usd").value = o.rateUsd || 41.50;
+  document.getElementById("edit-markup").value = o.markup || 50;
+  document.getElementById("edit-status").value = o.status || "ordered";
+  document.getElementById("edit-eta").value = o.eta || "";
+
+  document.getElementById("edit-modal").style.display = "flex";
+}
+
+function closeEditModal() {
+  document.getElementById("edit-modal").style.display = "none";
+}
+
+function saveEditedOrder() {
+  const id = parseInt(document.getElementById("edit-id").value);
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  o.name = document.getElementById("edit-name").value.trim();
+  o.track = document.getElementById("edit-track").value.trim();
+  o.link = document.getElementById("edit-link").value.trim();
+  o.img = document.getElementById("edit-img").value.trim();
+  o.qty = parseFloat(document.getElementById("edit-qty").value) || 1;
+  o.priceCny = parseFloat(document.getElementById("edit-price-cny").value) || 0;
+  o.rateCny = parseFloat(document.getElementById("edit-rate-cny").value) || 5.80;
+  o.shippingVal = parseFloat(document.getElementById("edit-ship-val").value) || 0;
+  o.shippingCur = document.getElementById("edit-ship-cur").value;
+  o.rateUsd = parseFloat(document.getElementById("edit-rate-usd").value) || 41.50;
+  o.markup = parseFloat(document.getElementById("edit-markup").value) || 50;
+  o.status = document.getElementById("edit-status").value;
+  o.eta = document.getElementById("edit-eta").value;
+
+  closeEditModal();
+  cloudSave();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll(".ftab").forEach(b => b.classList.remove("active"));
+  event.target.classList.add("active");
+  renderTable();
+}
+
+function viewImage(url) {
+  if (!url) return;
+  document.getElementById("img-modal-src").src = url;
+  document.getElementById("img-modal").style.display = "flex";
+}
+
+// ══════════════════════ ІМПОРТ НАКЛАДНОЇ КАРГО ══════════════════════
+function handleInvoiceUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const today = getTodayRates();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: ''});
+
+      let trackColIdx = -1, costColIdx = -1, headerRowIdx = -1;
+
+      for (let r = 0; r < Math.min(25, rows.length); r++) {
+        for (let c = 0; c < rows[r].length; c++) {
+          const val = String(rows[r][c]).toLowerCase();
+          if (val.includes('трек')) trackColIdx = c;
+          if (val.includes('вартість') || val.includes('стоимость') || val.includes('сумма') || val.includes('ціна')) costColIdx = c;
+        }
+        if (trackColIdx !== -1 && costColIdx !== -1) {
+          headerRowIdx = r;
+          break;
+        }
+      }
+
+      if (trackColIdx === -1) trackColIdx = 2;
+      if (costColIdx === -1) costColIdx = 8;
+      if (headerRowIdx === -1) headerRowIdx = 10;
+
+      let matchedCount = 0;
+      const invoiceData = {};
+
+      for (let r = headerRowIdx + 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || !row[trackColIdx]) continue;
+        const rawTrack = String(row[trackColIdx]).trim().replace(/\s+/g, '');
+        const cost = parseFloat(String(row[costColIdx]).replace(',', '.')) || 0;
+        if (rawTrack && cost > 0) invoiceData[rawTrack] = cost;
+      }
+
+      orders.forEach(order => {
+        if (!order.track) return;
+        const cleanTrack = String(order.track).trim().replace(/\s+/g, '');
+        if (invoiceData[cleanTrack] !== undefined) {
+          order.shippingVal = invoiceData[cleanTrack];
+          order.shippingCur = 'USD';
+          order.rateUsd = today.usd;
+          order.isAutoShip = true;
+          if (order.status === 'ordered' || order.status === 'wh-cn') order.status = 'transit';
+          matchedCount++;
+        }
+      });
+
+      cloudSave();
+      alert(`✓ Успішно!\nЗнайдено треків: ${Object.keys(invoiceData).length}\nОновлено доставку для: ${matchedCount} замовлень.`);
+    } catch(err) {
+      alert('Помилка: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+// ══════════════════════ ВІДОБРАЖЕННЯ ТАБЛИЦІ ══════════════════════
+function renderTable() {
+  const tbody = document.getElementById("orders-body");
+  const q = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
+
+  let filtered = orders.filter(o => {
+    if (currentFilter === "active" && o.isArchived) return false;
+    if (currentFilter === "archived" && !o.isArchived) return false;
+    if (["ordered", "wh-cn", "transit", "received"].includes(currentFilter)) {
+      if (o.isArchived || o.status !== currentFilter) return false;
+    }
+    if (q) {
+      const matchName = (o.name || "").toLowerCase().includes(q);
+      const matchTrack = (o.track || "").toLowerCase().includes(q);
+      if (!matchName && !matchTrack) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:25px;color:#aaa">Немає відповідних замовлень.</td></tr>';
+    return;
+  }
+
+  const statusMap = {
+    'ordered': '<span class="badge st-ordered">🟡 Замовлено</span>',
+    'wh-cn': '<span class="badge st-wh-cn">🟠 Склад CN</span>',
+    'transit': '<span class="badge st-transit">🔵 В дорозі</span>',
+    'received': '<span class="badge st-received">🟢 Отримано</span>'
+  };
+
+  tbody.innerHTML = filtered.map(o => {
+    const unitCost = calcUnitCost(o);
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    const unitProfit = sellPrice - unitCost;
+
+    const imgHtml = o.img 
+      ? `<img src="${o.img}" class="prod-img" onclick="viewImage('${o.img}')" title="Клікніть, щоб збільшити">`
+      : `<div class="prod-img">📷</div>`;
+
+    const trackHtml = o.track 
+      ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link" title="Відстежити на 17TRACK">${o.track} ↗</a>`
+      : `<span style="color:#bbb">—</span>`;
+
+    const linkHtml = o.link 
+      ? `<div style="margin-top:2px"><a href="${o.link}" target="_blank" class="ext-link">🔗 Посилання на товар</a></div>` 
+      : '';
+
+    const autoBadge = o.isAutoShip ? `<span class="badge-auto" title="З накладної карго">✓ карго</span>` : '';
+
+    return `
+      <tr class="${o.isArchived ? 'archived-row' : ''}">
+        <td style="text-align:center">${imgHtml}</td>
+        <td>
+          <b>${o.name}</b>
+          ${linkHtml}
+        </td>
+        <td>${trackHtml}</td>
+        <td style="text-align:center"><b>${o.qty}</b></td>
+        <td>
+          <div>${Number(o.priceCny || 0).toFixed(2)} ¥</div>
+          <div class="calc-sub">курс: <b>${(o.rateCny || 5.80).toFixed(2)}</b></div>
+        </td>
+        <td>
+          <div>
+            <b>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur === 'USD' ? '$' : o.shippingCur === 'CNY' ? '¥' : 'грн'}` : '0.00'}</b>
+            ${autoBadge}
+          </div>
+          <div class="calc-sub">≈ ${shipToUah(o).toFixed(2)} грн</div>
+        </td>
+        <td>
+          <div class="calc-res">${unitCost.toFixed(2)} грн</div>
+        </td>
+        <td>
+          <div class="price-tag">${sellPrice.toFixed(2)} грн</div>
+          <div class="profit-tag">+${markup}% (маржа: ${unitProfit.toFixed(1)} грн)</div>
+        </td>
+        <td>${statusMap[o.status] || o.status}</td>
+        <td style="font-size:11px;white-space:nowrap">${o.eta || '—'}</td>
+        <td style="text-align:center;white-space:nowrap">
+          <button class="btn-icon" onclick="openEditModal(${o.id})" title="Редагувати">✏️</button>
+          <button class="btn-icon" onclick="toggleArchive(${o.id})" title="${o.isArchived ? 'Повернути з архіву' : 'Перемістити в архів'}">${o.isArchived ? '📂' : '🗄️'}</button>
+          <button class="btn-icon" onclick="deleteOrder(${o.id})" title="Видалити" style="color:#e74c3c">🗑</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+checkSavedAuth();
+formCalc();
+</script>
+</body>
+</html>
