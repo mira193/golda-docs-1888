@@ -2,399 +2,445 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Закупівлі Китай — Golda Aquablast</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Склад & Закупівлі — Golda Aquablast</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;color:#222;padding:16px;max-width:1380px;margin:0 auto}
-h1{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2c3e50;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #2c3e50;display:flex;justify-content:space-between;align-items:center}
-.sec{background:#fff;border-radius:6px;padding:14px 16px;margin-bottom:12px;border:1px solid #dde2ea}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#222;padding:12px;max-width:1420px;margin:0 auto}
+
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #2c3e50}
+h1{font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#2c3e50;display:flex;align-items:center;gap:6px}
+
+.main-nav{display:flex;gap:6px;margin-bottom:12px}
+.nav-btn{flex:1;padding:10px;border:1px solid #dde2ea;background:#fff;border-radius:6px;font-size:12px;font-weight:700;color:#6b7c93;cursor:pointer;text-align:center;transition:.2s}
+.nav-btn.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
+
+.sec{background:#fff;border-radius:6px;padding:12px 14px;margin-bottom:12px;border:1px solid #dde2ea}
 .st{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8a96a3;margin-bottom:10px}
-.row{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;align-items:flex-end}
-.f{display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px}
+.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px}
 .f.w2{flex:2}.f.w3{flex:3}.f.w4{flex:4}
-label{font-size:11px;color:#6b7c93;font-weight:600}
-input,select,textarea{border:1px solid #d5dae3;border-radius:4px;padding:6px 8px;font-size:12px;color:#222;background:#fafbfc;width:100%}
+label{font-size:10px;color:#6b7c93;font-weight:600}
+input,select,textarea{border:1px solid #d5dae3;border-radius:4px;padding:7px 8px;font-size:13px;color:#222;background:#fafbfc;width:100%}
 input:focus,select:focus{outline:none;border-color:#2c3e50;background:#fff}
 
-/* Смуга курсів та статусу */
-.sync-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:8px 14px;margin-bottom:12px;font-size:11px;flex-wrap:wrap;gap:10px}
-.sync-status{display:flex;align-items:center;gap:8px}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.sync-bar{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;flex-wrap:wrap;gap:8px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block}
 .sync-dot.ok{background:#27ae60}
 .sync-dot.busy{background:#f0ad4e;animation:pulse 1s infinite}
 .sync-dot.off{background:#e74c3c}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-.rates-inputs{display:flex;gap:12px;align-items:center}
-.rate-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#1a6fa8}
-.rate-item input{width:65px;text-align:center;padding:3px 5px;font-weight:700}
+.rates-inputs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rate-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#1a6fa8}
+.rate-item input{width:60px;text-align:center;padding:3px;font-weight:700}
 
-/* Блок фінансової аналітики */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;margin-bottom:12px}
-.stat-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:12px 14px}
-.stat-card .lbl{font-size:10px;font-weight:700;color:#8a96a3;text-transform:uppercase;margin-bottom:4px}
-.stat-card .val{font-size:18px;font-weight:700;color:#2c3e50}
-.stat-card .sub{font-size:10px;color:#5a8db5;margin-top:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:8px;margin-bottom:12px}
+.stat-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:10px 12px}
+.stat-card .lbl{font-size:9px;font-weight:700;color:#8a96a3;text-transform:uppercase}
+.stat-card .val{font-size:16px;font-weight:700;color:#2c3e50;margin-top:2px}
 
-/* Імпорт накладної */
-.import-box{background:#fdf9ed;border:1px dashed #f0c960;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.btn-upload{background:#217346;color:#fff;padding:7px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.btn-upload:hover{background:#185c38}
-
-/* Кнопки */
-.btn{padding:8px 14px;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn{padding:8px 12px;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .btn-primary{background:#2c3e50;color:#fff}
 .btn-primary:hover{background:#1a252f}
 .btn-clear{background:#fdf0f0;color:#c0392b;border:1px solid #f0c0c0}
+.btn-sec{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0}
+.btn-sec:hover{background:#d5e9f8}
 
-/* Фільтри та вкладки */
-.filter-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
-.ftab{padding:6px 12px;border-radius:4px;border:1px solid #dde2ea;background:#fff;font-size:11px;font-weight:700;color:#6b7c93;cursor:pointer}
+.filter-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.ftab{padding:5px 9px;border-radius:4px;border:1px solid #dde2ea;background:#fff;font-size:11px;font-weight:700;color:#6b7c93;cursor:pointer}
 .ftab.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
-.search-input{max-width:240px;margin-left:auto}
+.search-input{flex:1;min-width:180px}
 
-/* Таблиця */
-table.orders-tbl{width:100%;border-collapse:collapse;font-size:12px}
-table.orders-tbl th{background:#f7f9fb;font-size:10px;font-weight:700;color:#8a96a3;padding:8px 6px;text-align:left;border-bottom:1px solid #dde2ea;text-transform:uppercase}
-table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-align:middle}
-table.orders-tbl tr:hover{background:#fcfdfd}
-tr.archived-row{opacity:0.65;background:#fafbfc}
-
-/* Фото */
-.prod-img{width:44px;height:44px;border-radius:4px;object-fit:cover;border:1px solid #dde2ea;cursor:pointer;background:#f8f9fa;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:18px}
-.prod-img:hover{border-color:#1a6fa8;transform:scale(1.05)}
-
-/* Бейджі статусів */
-.badge{padding:3px 6px;border-radius:4px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
+.badge{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
 .st-ordered{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
 .st-wh-cn{background:#ffe8d6;color:#a04000;border:1px solid #fcd5b5}
 .st-transit{background:#cce5ff;color:#004085;border:1px solid #b8daff}
 .st-received{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.badge-transit-stock{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0;font-size:10px;padding:2px 5px;border-radius:4px;display:inline-block}
 
-.badge-auto{background:#e8f8f0;color:#187a41;border:1px solid #a8e5c2;font-size:9px;padding:1px 4px;border-radius:3px}
 .track-link{font-family:monospace;font-size:11px;font-weight:700;color:#1a6fa8;text-decoration:none;background:#f0f2f5;padding:2px 5px;border-radius:3px}
-.track-link:hover{text-decoration:underline;background:#e2ecf5}
-.ext-link{color:#1a6fa8;text-decoration:none;font-size:11px}
-.ext-link:hover{text-decoration:underline}
 
-.calc-res{font-weight:700;color:#1a6fa8;font-size:13px}
-.calc-sub{font-size:10px;color:#8a96a3}
-.price-tag{font-weight:700;color:#27ae60;font-size:12px}
-.profit-tag{font-size:10px;color:#8a96a3}
+.desktop-only{display:block}
+.mobile-only{display:none}
+table.orders-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.orders-tbl th{background:#f7f9fb;font-size:10px;font-weight:700;color:#8a96a3;padding:8px 6px;text-align:left;border-bottom:1px solid #dde2ea}
+table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-align:middle}
 
-.btn-icon{background:none;border:none;cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px}
-.btn-icon:hover{background:#edf2f7}
+.card-list{display:flex;flex-direction:column;gap:8px}
+.m-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:10px;display:flex;gap:10px;align-items:flex-start}
+.m-card-img{width:60px;height:60px;border-radius:4px;object-fit:cover;border:1px solid #dde2ea;flex-shrink:0}
+.m-card-body{flex:1;min-width:0}
+.m-card-title{font-size:13px;font-weight:700;color:#2c3e50;margin-bottom:3px;word-break:break-word}
+.m-card-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:4px}
 
-/* Екран авторизації */
-#auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f2f5;display:flex;justify-content:center;align-items:center;z-index:99999}
-.auth-card{background:#fff;padding:24px 28px;border-radius:8px;border:1px solid #dde2ea;width:100%;max-width:340px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06)}
-.auth-card h2{font-size:15px;margin-bottom:8px;color:#2c3e50}
-.auth-card p{font-size:11px;color:#8a96a3;margin-bottom:14px}
-.auth-card input{font-size:14px;text-align:center;padding:8px;margin-bottom:12px;font-weight:600}
-.auth-err{color:#e74c3c;font-size:11px;margin-top:8px;display:none}
+.qty-ctrl{display:inline-flex;align-items:center;border:1px solid #b8d9f0;border-radius:4px;background:#eef6fc;overflow:hidden}
+.btn-qty{background:none;border:none;width:32px;height:30px;font-size:17px;font-weight:700;color:#1a6fa8;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-qty:hover{background:#d5e9f8}
+.btn-qty:active{background:#b8d9f0}
+.qty-val{font-size:13px;font-weight:700;color:#1a252f;padding:0 8px;min-width:34px;text-align:center}
 
-/* Модалки */
-#edit-modal, #img-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999}
-.modal-box{background:#fff;padding:20px;border-radius:8px;width:100%;max-width:620px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
-.modal-title{font-size:14px;font-weight:700;color:#2c3e50;margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:6px}
+@media (max-width: 820px) {
+  body{padding:8px}
+  .desktop-only{display:none}
+  .mobile-only{display:block}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .rates-inputs{width:100%;justify-content:space-between}
+  .search-input{width:100%;margin-left:0}
+}
+
+#auth-overlay, #edit-modal, #img-modal, #stock-modal, #history-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999;padding:12px}
+.modal-box{background:#fff;padding:16px;border-radius:8px;width:100%;max-width:580px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:92vh;overflow-y:auto}
+.auth-card{background:#fff;padding:24px;border-radius:8px;width:100%;max-width:320px;text-align:center}
+
+.hist-item{border-left:3px solid #1a6fa8;padding:6px 10px;margin-bottom:8px;background:#f8fafd;font-size:11px}
+.hist-date{color:#8a96a3;font-size:10px}
 </style>
 </head>
 <body>
 
-<!-- ЕКРАН ВХОДУ (ЗАХИСТ СЕКРЕТНИМ КЛЮЧЕМ) -->
-<div id="auth-overlay">
+<!-- АВТОРИЗАЦІЯ (ВІКНО ВХОДУ) -->
+<div id="auth-overlay" style="display:flex">
   <div class="auth-card">
-    <h2>🔐 Вхід у систему</h2>
-    <p>Введіть секретний ключ доступу до бази</p>
-    <input type="password" id="token-input" placeholder="Введіть ключ..." autofocus onkeypress="if(event.key==='Enter')login()">
+    <h2 style="font-size:16px;color:#2c3e50;margin-bottom:6px">🔐 Вхід у систему</h2>
+    <p style="font-size:11px;color:#8a96a3;margin-bottom:12px">Введіть ключ доступу</p>
+    <input type="password" id="token-input" placeholder="GA2026china" style="text-align:center;font-size:15px;margin-bottom:10px" onkeypress="if(event.key==='Enter')login()">
     <button class="btn btn-primary" style="width:100%" onclick="login()">Увійти</button>
-    <div class="auth-err" id="auth-err">Невірний ключ або помилка доступу</div>
+    <div id="auth-err" style="color:#e74c3c;font-size:11px;margin-top:8px;display:none">Невірний ключ доступу</div>
   </div>
 </div>
 
 <div id="app-container" style="display:none">
-  <h1>
-    <span>📦 Закупівлі Китай · Golda Aquablast CRM</span>
-    <button class="btn" style="background:none;color:#8a96a3;font-size:11px" onclick="logout()">Вийти 🚪</button>
-  </h1>
+  <header>
+    <h1>🏷️ Golda Stock & Logistics</h1>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sec" style="padding:4px 8px;font-size:11px" onclick="exportExcel()" title="Завантажити копію в Excel">📊 Excel</button>
+      <button class="btn btn-sec" style="padding:4px 8px;font-size:11px" onclick="exportBackupJSON()" title="Завантажити JSON">💾 JSON</button>
+      <button class="btn" style="background:none;color:#8a96a3;font-size:11px;padding:4px" onclick="logout()">Вийти 🚪</button>
+    </div>
+  </header>
 
-  <!-- СИНХРОНІЗАЦІЯ І КУРСИ -->
+  <!-- НАВІГАЦІЯ: СКЛАД ПЕРШИЙ -->
+  <div class="main-nav">
+    <button class="nav-btn active" id="btn-view-stock" onclick="switchView('stock')">🏷️ Склад і залишки (<span id="stock-badge">0</span>)</button>
+    <button class="nav-btn" id="btn-view-orders" onclick="switchView('orders')">🚚 Замовлення та доставка (<span id="orders-badge">0</span>)</button>
+  </div>
+
+  <!-- КУРСИ ТА СТАТУС -->
   <div class="sync-bar">
-    <div class="sync-status">
+    <div style="display:flex;align-items:center;gap:6px">
       <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-txt" style="font-weight:600;color:#6b7c93">Підключення до Google Таблиці...</span>
+      <span id="sync-txt" style="font-weight:600;color:#6b7c93">Підключення...</span>
     </div>
     <div class="rates-inputs">
-      <span style="font-size:11px;color:#8a96a3">Курси для нових замовлень сьогодні:</span>
-      <div class="rate-item">
-        <span>1 ¥ =</span>
-        <input type="number" id="rate-cny-today" value="5.80" step="0.01" oninput="formCalc()">
-        <span>грн</span>
-      </div>
-      <div class="rate-item">
-        <span>1 $ =</span>
-        <input type="number" id="rate-usd-today" value="41.50" step="0.1" oninput="formCalc()">
-        <span>грн</span>
-      </div>
+      <span style="font-size:10px;color:#8a96a3" id="rate-source-txt">Офіційний курс НБУ:</span>
+      <div class="rate-item"><span>1¥ =</span><input type="number" id="rate-cny-today" value="5.80" step="0.01" oninput="formCalc()"><span>грн</span></div>
+      <div class="rate-item"><span>1$ =</span><input type="number" id="rate-usd-today" value="41.50" step="0.1" oninput="formCalc()"><span>грн</span></div>
+      <button class="btn" style="padding:2px 6px;font-size:10px;background:#f0f2f5" onclick="fetchNbuRates(true)" title="Оновити курси">🔄</button>
     </div>
   </div>
 
-  <!-- ФІНАНСОВА АНАЛІТИКА -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="lbl">Товарів у дорозі</div>
-      <div class="val" id="stat-transit-cost">0 грн</div>
-      <div class="sub" id="stat-transit-count">0 позицій пливе/летить</div>
-    </div>
-    <div class="stat-card">
-      <div class="lbl">Загальна вартість закупівлі</div>
-      <div class="val" id="stat-total-cny">0 ¥</div>
-      <div class="sub" id="stat-total-items">0 одиниць товару</div>
-    </div>
-    <div class="stat-card">
-      <div class="lbl">Витрати на доставку карго</div>
-      <div class="val" id="stat-ship-cost">0 грн</div>
-      <div class="sub" id="stat-ship-sub">по закритих накладних</div>
-    </div>
-    <div class="stat-card">
-      <div class="lbl">Потенційний прибуток (маржа)</div>
-      <div class="val" id="stat-profit-val" style="color:#27ae60">0 грн</div>
-      <div class="sub">при розпродажу за плановою ціною</div>
-    </div>
-  </div>
-
-  <!-- ІМПОРТ НАКЛАДНОЇ КАРГО -->
-  <div class="import-box">
-    <div style="font-size:11px;color:#7a5a15">
-      <b>📥 Отримали накладну карго (Turboavia тощо)?</b>
-      <span>Завантажте файл (.xlsx / .csv) — трек-номери та вартість доставки оновляться автоматично</span>
-    </div>
-    <label class="btn-upload">
-      📄 Завантажити накладну Excel
-      <input type="file" id="file-invoice" accept=".xlsx, .xls, .csv" style="display:none" onchange="handleInvoiceUpload(event)">
-    </label>
-  </div>
-
-  <!-- ФОРМА ДОДАВАННЯ -->
-  <div class="sec">
-    <div class="st">➕ Додати нове замовлення</div>
-    
-    <div class="row">
-      <div class="f w3">
-        <label>Найменування товару *</label>
-        <input id="f-name" placeholder="напр. Сопло карбід бору 4мм">
-      </div>
-      <div class="f w2">
-        <label>Китайський трек-номер</label>
-        <input id="f-track" placeholder="напр. 435192078970166" style="font-weight:700;font-family:monospace">
-      </div>
-      <div class="f w2">
-        <label>Посилання на товар (1688 / Taobao)</label>
-        <input id="f-link" placeholder="https://detail.1688.com/...">
-      </div>
-      <div class="f w2">
-        <label>Посилання на фото товару (URL)</label>
-        <input id="f-img" placeholder="https://... або залиште порожнім">
-      </div>
+  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ ══════════════════════ -->
+  <div id="view-stock">
+    <div class="sec" style="background:#eef6fc;border-color:#b8d9f0">
+      <div style="font-size:12px;font-weight:700;color:#1a6fa8">📦 Складський облік фактичних залишків</div>
+      <div style="font-size:11px;color:#5a8db5;margin-top:2px">Відображається наявність на складі та очікувані поставки. Кожна зміна кількості записується в історію.</div>
     </div>
 
-    <div class="row">
-      <div class="f">
-        <label>Кількість (шт)</label>
-        <input type="number" id="f-qty" value="1" min="1" oninput="formCalc()">
-      </div>
-      <div class="f">
-        <label>Ціна в Китаї (¥ за шт)</label>
-        <input type="number" id="f-price-cny" placeholder="0.00" step="0.01" oninput="formCalc()">
-      </div>
-      <div class="f" style="max-width:110px">
-        <label>Курс ¥ (купівля)</label>
-        <input type="number" id="f-custom-cny" step="0.01" placeholder="5.80" oninput="formCalc()">
-      </div>
-      <div class="f w2">
-        <label>Доставка (можна додати пізніше)</label>
-        <div style="display:flex;gap:4px">
-          <input type="number" id="f-ship-val" placeholder="0.00" step="0.01" oninput="formCalc()">
-          <select id="f-ship-cur" style="width:75px" onchange="formCalc()">
-            <option value="USD">$ USD</option>
-            <option value="UAH">грн</option>
-            <option value="CNY">¥ Юань</option>
-          </select>
-        </div>
-      </div>
-      <div class="f" style="max-width:110px">
-        <label>Націнка (%)</label>
-        <input type="number" id="f-markup" value="50" min="0" step="5" oninput="formCalc()">
-      </div>
-      <div class="f w2">
-        <label>Статус</label>
-        <select id="f-status">
-          <option value="ordered">🟡 Замовлено (йде по Китаю)</option>
-          <option value="wh-cn">🟠 На складі в Китаї</option>
-          <option value="transit">🔵 Відправлено в Україну</option>
-          <option value="received">🟢 Отримано</option>
-        </select>
-      </div>
-      <div class="f">
-        <label>ETA (Прибуття)</label>
-        <input type="date" id="f-eta">
-      </div>
-      <div class="f w2" style="background:#f4f7fb;padding:6px 10px;border-radius:4px;border:1px solid #d5dae3">
-        <label style="color:#1a6fa8">Собівартість & Продаж:</label>
-        <div class="calc-res" id="f-calc-preview">0.00 грн / шт</div>
-        <div class="calc-sub" id="f-calc-sell-preview" style="color:#27ae60;font-weight:600">Ціна продажу: 0.00 грн</div>
-      </div>
-    </div>
+    <input type="text" class="search-input" id="search-stock" placeholder="🔍 Швидкий пошук товару на складі..." style="margin-bottom:10px" oninput="renderStock()">
 
-    <div style="display:flex;justify-content:flex-end;margin-top:8px">
-      <button class="btn btn-primary" onclick="addOrder()">✓ Додати замовлення</button>
-    </div>
-  </div>
-
-  <!-- ТАБЛИЦЯ І ФІЛЬТРИ -->
-  <div class="sec">
-    <div class="filter-tabs">
-      <button class="ftab active" onclick="setFilter('active')">Активні замовлення (<span id="cnt-active">0</span>)</button>
-      <button class="ftab" onclick="setFilter('ordered')">🟡 Замовлено</button>
-      <button class="ftab" onclick="setFilter('wh-cn')">🟠 На складі CN</button>
-      <button class="ftab" onclick="setFilter('transit')">🔵 В дорозі в UA</button>
-      <button class="ftab" onclick="setFilter('received')">🟢 Отримано</button>
-      <button class="ftab" onclick="setFilter('archived')">🗄️ Архів (<span id="cnt-archived">0</span>)</button>
-      <button class="ftab" onclick="setFilter('all')">Всі</button>
-      
-      <input type="text" class="search-input" id="search-input" placeholder="🔍 Пошук за назвою або треком..." oninput="renderTable()">
-    </div>
-
-    <div style="overflow-x:auto">
+    <div class="desktop-only sec" style="padding:0;overflow:hidden">
       <table class="orders-tbl">
         <thead>
           <tr>
-            <th style="width:48px;text-align:center">Фото</th>
-            <th>Товар & Посилання</th>
-            <th>Трек-номер (CN)</th>
-            <th style="text-align:center">К-сть</th>
-            <th>Ціна ¥ & Курс</th>
-            <th>Доставка</th>
+            <th style="width:50px;text-align:center">Фото</th>
+            <th>Товар</th>
+            <th>Очікується в дорозі</th>
             <th>Собівартість / шт</th>
+            <th>Ціна продажу</th>
+            <th style="text-align:center;width:150px">Фактичний залишок</th>
+            <th>Сума на складі</th>
+            <th style="text-align:center">Журнал</th>
+          </tr>
+        </thead>
+        <tbody id="stock-desktop-body"></tbody>
+      </table>
+    </div>
+
+    <div class="mobile-only card-list" id="stock-mobile-body"></div>
+  </div>
+
+  <!-- ══════════════════════ РОЗДІЛ 2: ЗАМОВЛЕННЯ ТА ДОСТАВКА ══════════════════════ -->
+  <div id="view-orders" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="lbl">В дорозі / склад CN</div><div class="val" id="stat-transit-cost">0 грн</div></div>
+      <div class="stat-card"><div class="lbl">Закупівля за місяць</div><div class="val" id="stat-total-cny">0 ¥</div></div>
+      <div class="stat-card"><div class="lbl">Доставка карго</div><div class="val" id="stat-ship-cost">0 грн</div></div>
+      <div class="stat-card"><div class="lbl">Очікуваний прибуток</div><div class="val" id="stat-profit-val" style="color:#27ae60">0 грн</div></div>
+    </div>
+
+    <div class="sec" style="background:#fdf9ed;border-color:#f0c960;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="font-size:11px;color:#7a5a15"><b>📥 Накладна перевізника (.xlsx / Turboavia)</b> — автопідтягування вартості доставки</div>
+      <label class="btn" style="background:#217346;color:#fff;cursor:pointer;padding:6px 10px;font-size:11px">
+        📄 Завантажити файл Excel
+        <input type="file" id="file-invoice" accept=".xlsx, .xls, .csv" style="display:none" onchange="handleInvoiceUpload(event)">
+      </label>
+    </div>
+
+    <div class="sec">
+      <div class="st">➕ Нове замовлення товару</div>
+      <div class="row">
+        <div class="f w3"><label>Назва товару *</label><input id="f-name" placeholder="напр. Сопло карбід бору 4мм"></div>
+        <div class="f w2"><label>Китайський трек-номер</label><input id="f-track" placeholder="435192078970166" style="font-family:monospace;font-weight:700"></div>
+        <div class="f w2"><label>Посилання на товар (1688/Taobao)</label><input id="f-link" placeholder="https://..."></div>
+        <div class="f w2"><label>Посилання на фото (URL)</label><input id="f-img" placeholder="https://..."></div>
+      </div>
+      <div class="row">
+        <div class="f" style="min-width:125px">
+          <label style="color:#1a6fa8;font-weight:700">Дата замовлення</label>
+          <input type="date" id="f-order-date" onchange="onOrderDateChange(this.value)">
+        </div>
+        <div class="f"><label>К-сть</label><input type="number" id="f-qty" value="1" min="1" oninput="formCalc()"></div>
+        <div class="f"><label>Ціна ¥</label><input type="number" id="f-price-cny" placeholder="0.00" step="0.01" oninput="formCalc()"></div>
+        <div class="f" style="max-width:115px">
+          <label title="Фіксований курс юаня на обрану дату">Курс ¥ (<span id="f-cny-date-lbl">НБУ</span>)</label>
+          <input type="number" id="f-custom-cny" step="0.01" placeholder="5.80" oninput="formCalc()">
+        </div>
+        <div class="f w2"><label>Доставка</label>
+          <div style="display:flex;gap:3px">
+            <input type="number" id="f-ship-val" placeholder="0.00" step="0.01" oninput="formCalc()">
+            <select id="f-ship-cur" style="width:70px" onchange="formCalc()"><option value="USD">$</option><option value="UAH">грн</option><option value="CNY">¥</option></select>
+          </div>
+        </div>
+        <div class="f"><label>Націнка %</label><input type="number" id="f-markup" value="50" step="5" oninput="formCalc()"></div>
+        <div class="f w2"><label>Статус</label>
+          <select id="f-status">
+            <option value="ordered">🟡 Замовлено</option>
+            <option value="wh-cn">🟠 Склад CN</option>
+            <option value="transit">🔵 В дорозі в UA</option>
+            <option value="received">🟢 Отримано</option>
+          </select>
+        </div>
+        <div class="f"><label>ETA</label><input type="date" id="f-eta"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div style="font-size:11px;color:#1a6fa8;font-weight:700" id="f-calc-preview">Собівартість: 0.00 грн / шт</div>
+        <button class="btn btn-primary" onclick="addOrder()">✓ Додати замовлення</button>
+      </div>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="setFilter('active')">Всі активні</button>
+      <button class="ftab" onclick="setFilter('ordered')">🟡 Замовлено</button>
+      <button class="ftab" onclick="setFilter('wh-cn')">🟠 Склад CN</button>
+      <button class="ftab" onclick="setFilter('transit')">🔵 В дорозі</button>
+      <button class="ftab" onclick="setFilter('received')">🟢 Отримано</button>
+      <button class="ftab" onclick="setFilter('archived')">🗄️ Архів</button>
+      <input type="text" class="search-input" id="search-input" placeholder="🔍 Пошук за назвою чи треком..." oninput="renderOrders()">
+    </div>
+
+    <div class="desktop-only sec" style="padding:0;overflow:hidden">
+      <table class="orders-tbl">
+        <thead>
+          <tr>
+            <th style="width:40px;text-align:center">Фото</th>
+            <th>Товар</th>
+            <th>Дата замовлення</th>
+            <th>Трек (CN)</th>
+            <th style="text-align:center">К-сть</th>
+            <th>Ціна ¥</th>
+            <th>Доставка</th>
+            <th>Собівартість</th>
             <th>Ціна продажу</th>
             <th>Статус</th>
             <th>ETA</th>
             <th style="text-align:center">Дії</th>
           </tr>
         </thead>
-        <tbody id="orders-body"></tbody>
+        <tbody id="orders-desktop-body"></tbody>
       </table>
+    </div>
+
+    <div class="mobile-only card-list" id="orders-mobile-body"></div>
+  </div>
+</div>
+
+<!-- МОДАЛЬНІ ВІКНА -->
+<div id="stock-modal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="st" style="font-size:13px;color:#2c3e50" id="stock-modal-title">📦 Зміна залишку</div>
+    <input type="hidden" id="sm-order-id">
+    <input type="hidden" id="sm-direction">
+    
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px" id="sm-item-name"></div>
+    <div class="row">
+      <div class="f"><label>Кількість (шт) *</label><input type="number" id="sm-qty" value="1" min="1" autofocus></div>
+      <div class="f"><label>Хто змінив (ПІБ / ініціали) *</label><input id="sm-user" placeholder="напр. Влад"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label>Коментар / Призначення</label><input id="sm-comment" placeholder="напр. на збірку камери GA-95, продаж..."></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn" style="background:#eee" onclick="closeStockModal()">Скасувати</button>
+      <button class="btn btn-primary" id="sm-submit-btn" onclick="submitStockChange()">Підтвердити</button>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛЬНЕ ВІКНО РЕДАГУВАННЯ -->
+<div id="history-modal">
+  <div class="modal-box" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="st" style="font-size:13px;color:#2c3e50;margin:0">📜 Історія руху: <span id="hist-item-title"></span></div>
+      <button class="btn" style="padding:2px 6px;background:none;font-size:16px" onclick="closeHistoryModal()">×</button>
+    </div>
+    <div id="history-list-body" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <div id="edit-modal">
   <div class="modal-box">
-    <div class="modal-title">✏️ Редагувати замовлення</div>
+    <div class="st" style="font-size:13px;color:#2c3e50">✏️ Редагувати позицію</div>
     <input type="hidden" id="edit-id">
-    
     <div class="row">
-      <div class="f w3">
-        <label>Найменування товару</label>
-        <input id="edit-name">
+      <div class="f w3"><label>Назва товару</label><input id="edit-name"></div>
+      <div class="f w2"><label>Трек-номер</label><input id="edit-track" style="font-family:monospace"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label>Посилання на фото</label><input id="edit-img"></div>
+      <div class="f"><label>Посилання на товар</label><input id="edit-link"></div>
+    </div>
+    <div class="row">
+      <div class="f" style="min-width:130px">
+        <label style="color:#1a6fa8;font-weight:700">Дата замовлення</label>
+        <input type="date" id="edit-order-date">
       </div>
-      <div class="f w2">
-        <label>Китайський трек-номер</label>
-        <input id="edit-track" style="font-weight:700;font-family:monospace">
+      <div class="f" style="display:flex;align-items:flex-end">
+        <button class="btn btn-sec" type="button" style="padding:7px 8px;font-size:11px" onclick="fetchNbuRateForEditDate()">🔄 Курс НБУ на дату</button>
       </div>
     </div>
-
     <div class="row">
-      <div class="f">
-        <label>Посилання на товар (1688/Taobao)</label>
-        <input id="edit-link">
-      </div>
-      <div class="f">
-        <label>Посилання на фото (URL)</label>
-        <input id="edit-img">
-      </div>
+      <div class="f"><label>К-сть замовлення</label><input type="number" id="edit-qty"></div>
+      <div class="f"><label>Ціна в ¥</label><input type="number" id="edit-price-cny" step="0.01"></div>
+      <div class="f"><label style="color:#1a6fa8">Фікс. курс ¥</label><input type="number" id="edit-rate-cny" step="0.01" style="font-weight:700"></div>
     </div>
-
     <div class="row">
-      <div class="f">
-        <label>Кількість (шт)</label>
-        <input type="number" id="edit-qty" min="1">
-      </div>
-      <div class="f">
-        <label>Ціна в Китаї (¥ за шт)</label>
-        <input type="number" id="edit-price-cny" step="0.01">
-      </div>
-      <div class="f">
-        <label style="color:#1a6fa8">Фіксований курс ¥</label>
-        <input type="number" id="edit-rate-cny" step="0.01" style="font-weight:700">
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="f w2">
-        <label>Вартість доставки</label>
-        <div style="display:flex;gap:4px">
+      <div class="f w2"><label>Доставка</label>
+        <div style="display:flex;gap:3px">
           <input type="number" id="edit-ship-val" step="0.01">
-          <select id="edit-ship-cur" style="width:75px">
-            <option value="USD">$ USD</option>
-            <option value="UAH">грн</option>
-            <option value="CNY">¥</option>
-          </select>
+          <select id="edit-ship-cur" style="width:70px"><option value="USD">$</option><option value="UAH">грн</option><option value="CNY">¥</option></select>
         </div>
       </div>
-      <div class="f">
-        <label style="color:#1a6fa8">Курс $ (для доставки)</label>
-        <input type="number" id="edit-rate-usd" step="0.1" style="font-weight:700">
-      </div>
-      <div class="f">
-        <label>Націнка (%)</label>
-        <input type="number" id="edit-markup" step="5">
-      </div>
+      <div class="f"><label>Курс $ (для доставки)</label><input type="number" id="edit-rate-usd" step="0.1"></div>
+      <div class="f"><label>Націнка %</label><input type="number" id="edit-markup" step="5"></div>
     </div>
-
     <div class="row">
-      <div class="f">
-        <label>Статус</label>
+      <div class="f"><label>Статус</label>
         <select id="edit-status">
           <option value="ordered">🟡 Замовлено</option>
-          <option value="wh-cn">🟠 На складі в Китаї</option>
-          <option value="transit">🔵 В дорозі в Україну</option>
+          <option value="wh-cn">🟠 Склад CN</option>
+          <option value="transit">🔵 В дорозі в UA</option>
           <option value="received">🟢 Отримано</option>
         </select>
       </div>
-      <div class="f">
-        <label>ETA (Прибуття)</label>
-        <input type="date" id="edit-eta">
-      </div>
+      <div class="f"><label>Залишок на складі (шт)</label><input type="number" id="edit-stock" min="0"></div>
+      <div class="f"><label>ETA</label><input type="date" id="edit-eta"></div>
     </div>
-
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
       <button class="btn" style="background:#eee" onclick="closeEditModal()">Скасувати</button>
-      <button class="btn btn-primary" onclick="saveEditedOrder()">Зберегти зміни</button>
+      <button class="btn btn-primary" onclick="saveEditedOrder()">Зберегти</button>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛЬНЕ ВІКНО ПЕРЕГЛЯДУ ФОТО -->
 <div id="img-modal" onclick="this.style.display='none'">
-  <div style="background:#fff;padding:8px;border-radius:8px;max-width:90%;max-height:90%">
+  <div style="background:#fff;padding:6px;border-radius:6px;max-width:92%;max-height:85vh">
     <img id="img-modal-src" style="max-width:100%;max-height:80vh;border-radius:4px;display:block">
   </div>
 </div>
 
 <script>
-// ══════════════════════ ПОСИЛАННЯ НА GOOGLE APPS SCRIPT ══════════════════════
-// Вставте сюди URL після розгортання в Google Таблиці
+// Вставте сюди ваше розгорнуте посилання з Google Apps Script
 const APP_URL = "https://script.google.com/macros/s/AKfycbzZvxKfM1vkFAODhWd5YbK7JzCBL4ynUq25pjHTJySMxE13h0Z2dICUICKcFq0QgBto/exec";
 
 let userToken = "";
 let orders = [];
 let currentFilter = "active";
+let activeTab = "stock";
 
-// ══════════════════════ АВТОРИЗАЦІЯ ══════════════════════
+async function getNbuRatesForDate(dateStr) {
+  if (!dateStr) return null;
+  const nbuDate = dateStr.replace(/-/g, "");
+  try {
+    const res = await fetch(`https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?date=${nbuDate}&json`);
+    const data = await res.json();
+    const usd = data.find(item => item.cc === "USD");
+    const cny = data.find(item => item.cc === "CNY");
+    return {
+      usd: usd && usd.rate ? usd.rate : null,
+      cny: cny && cny.rate ? cny.rate : null
+    };
+  } catch(e) {
+    return null;
+  }
+}
+
+async function fetchNbuRates(manual = false) {
+  try {
+    const res = await fetch("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json");
+    const data = await res.json();
+    const usd = data.find(item => item.cc === "USD");
+    const cny = data.find(item => item.cc === "CNY");
+
+    if (usd && usd.rate) {
+      const el = document.getElementById("rate-usd-today");
+      if (el) el.value = usd.rate.toFixed(2);
+    }
+    if (cny && cny.rate) {
+      const el = document.getElementById("rate-cny-today");
+      if (el) el.value = cny.rate.toFixed(2);
+      const customEl = document.getElementById("f-custom-cny");
+      if (customEl && !customEl.value) customEl.value = cny.rate.toFixed(2);
+    }
+    
+    const srcTxt = document.getElementById("rate-source-txt");
+    if (srcTxt) srcTxt.textContent = `НБУ (${new Date().toLocaleDateString('uk-UA')}):`;
+    formCalc();
+    if (manual) alert(`✓ Курси оновлено з НБУ:\n1 USD = ${usd.rate.toFixed(2)} грн\n1 CNY = ${cny.rate.toFixed(2)} грн`);
+  } catch(e) {
+    const srcTxt = document.getElementById("rate-source-txt");
+    if (srcTxt) srcTxt.textContent = "Курс (вручну):";
+  }
+}
+
+async function onOrderDateChange(dateStr) {
+  if (!dateStr) return;
+  const rates = await getNbuRatesForDate(dateStr);
+  if (rates && rates.cny) {
+    const customEl = document.getElementById("f-custom-cny");
+    if (customEl) customEl.value = rates.cny.toFixed(2);
+    const lbl = document.getElementById("f-cny-date-lbl");
+    if (lbl) lbl.textContent = dateStr.slice(5);
+    formCalc();
+  }
+}
+
+async function fetchNbuRateForEditDate() {
+  const dateStr = document.getElementById("edit-order-date").value;
+  if (!dateStr) { alert("Будь ласка, вкажіть дату замовлення!"); return; }
+  
+  const rates = await getNbuRatesForDate(dateStr);
+  if (rates && rates.cny) {
+    document.getElementById("edit-rate-cny").value = rates.cny.toFixed(2);
+    if (rates.usd && !document.getElementById("edit-rate-usd").value) {
+      document.getElementById("edit-rate-usd").value = rates.usd.toFixed(2);
+    }
+    alert(`✓ Підтягнуто курс НБУ на ${dateStr}:\n1 ¥ = ${rates.cny.toFixed(2)} грн\n1 $ = ${rates.usd ? rates.usd.toFixed(2) : '—'} грн`);
+  } else {
+    alert("Не вдалося знайти курс на цю дату в архіві НБУ.");
+  }
+}
+
 function checkSavedAuth() {
   const savedToken = localStorage.getItem("golda_china_token");
   if (savedToken) {
@@ -402,6 +448,9 @@ function checkSavedAuth() {
     document.getElementById("auth-overlay").style.display = "none";
     document.getElementById("app-container").style.display = "block";
     cloudLoad();
+  } else {
+    document.getElementById("auth-overlay").style.display = "flex";
+    document.getElementById("app-container").style.display = "none";
   }
 }
 
@@ -423,9 +472,8 @@ async function login() {
     document.getElementById("auth-overlay").style.display = "none";
     document.getElementById("app-container").style.display = "block";
     orders = data.orders || [];
-    renderTable();
-    updateAnalytics();
-    setSync("ok", `Синхронізовано · ${orders.length} записів`);
+    renderAll();
+    setSync("ok", `Синхронізовано · ${orders.length} поз.`);
   } catch(e) {
     localStorage.setItem("golda_china_token", userToken);
     document.getElementById("auth-overlay").style.display = "none";
@@ -444,12 +492,10 @@ function initLocalDemo() {
   if (local) {
     try { orders = JSON.parse(local); } catch(e){}
   }
-  renderTable();
-  updateAnalytics();
-  setSync("ok", "Локальний режим (без хмари)");
+  renderAll();
+  setSync("ok", "Локальний режим");
 }
 
-// ══════════════════════ ХМАРНА СИНХРОНІЗАЦІЯ ══════════════════════
 function setSync(cls, txt) {
   const d = document.getElementById("sync-dot");
   const t = document.getElementById("sync-txt");
@@ -460,8 +506,7 @@ function setSync(cls, txt) {
 let cloudSaveTimer = null;
 function cloudSave() {
   localStorage.setItem("golda_china_orders_offline", JSON.stringify(orders));
-  renderTable();
-  updateAnalytics();
+  renderAll();
 
   if (!APP_URL || APP_URL === "ВСТАВТЕ_ВАШЕ_ПОСИЛАННЯ_ТУТ") {
     setSync("ok", "Збережено локально");
@@ -477,9 +522,9 @@ function cloudSave() {
         body: JSON.stringify({ token: userToken, orders }),
         headers: { "Content-Type": "text/plain;charset=utf-8" }
       });
-      setSync("ok", `Синхронізовано з Google Таблицею · ${orders.length} замовлень`);
+      setSync("ok", `Синхронізовано · ${orders.length} поз.`);
     } catch(err) {
-      setSync("off", "Помилка збереження в хмару");
+      setSync("off", "Помилка збереження");
     }
   }, 1000);
 }
@@ -489,25 +534,24 @@ async function cloudLoad() {
     initLocalDemo();
     return;
   }
-
-  setSync("busy", "Завантаження з Google Таблиці...");
+  setSync("busy", "Завантаження з Google...");
   try {
     const res = await fetch(`${APP_URL}?token=${encodeURIComponent(userToken)}`);
     const data = await res.json();
     if (data.orders) orders = data.orders;
-    renderTable();
-    updateAnalytics();
+    renderAll();
     setSync("ok", `Синхронізовано · ${orders.length} замовлень`);
   } catch(err) {
     initLocalDemo();
   }
 }
 
-// ══════════════════════ РОЗРАХУНКИ І КУРСИ ══════════════════════
 function getTodayRates() {
+  const cnyEl = document.getElementById("rate-cny-today");
+  const usdEl = document.getElementById("rate-usd-today");
   return {
-    cny: parseFloat(document.getElementById("rate-cny-today").value) || 5.80,
-    usd: parseFloat(document.getElementById("rate-usd-today").value) || 41.50
+    cny: cnyEl ? (parseFloat(cnyEl.value) || 5.80) : 5.80,
+    usd: usdEl ? (parseFloat(usdEl.value) || 41.50) : 41.50
   };
 }
 
@@ -528,70 +572,25 @@ function calcUnitCost(item) {
 }
 
 function formCalc() {
+  const qtyEl = document.getElementById("f-qty");
+  if (!qtyEl) return;
   const today = getTodayRates();
-  const customCny = parseFloat(document.getElementById("f-custom-cny").value);
-  const rateCny = (!isNaN(customCny) && customCny > 0) ? customCny : today.cny;
+  const rateCny = today.cny;
   const rateUsd = today.usd;
 
-  const qty = parseFloat(document.getElementById("f-qty").value) || 1;
+  const qty = parseFloat(qtyEl.value) || 1;
   const priceCny = parseFloat(document.getElementById("f-price-cny").value) || 0;
   const shipVal = parseFloat(document.getElementById("f-ship-val").value) || 0;
   const shipCur = document.getElementById("f-ship-cur").value;
-  const markup = parseFloat(document.getElementById("f-markup").value) || 0;
 
   const itemUah = priceCny * rateCny;
   let shipUah = (shipCur === "USD") ? shipVal * rateUsd : (shipCur === "CNY" ? shipVal * rateCny : shipVal);
   const unitCost = itemUah + (qty > 0 ? shipUah / qty : 0);
-  const sellPrice = unitCost * (1 + markup / 100);
 
-  document.getElementById("f-calc-preview").textContent = `${unitCost.toFixed(2)} грн / шт`;
-  document.getElementById("f-calc-sell-preview").textContent = `Ціна продажу (+${markup}%): ${sellPrice.toFixed(2)} грн`;
+  const prevEl = document.getElementById("f-calc-preview");
+  if (prevEl) prevEl.textContent = `Собівартість: ${unitCost.toFixed(2)} грн / шт`;
 }
 
-// ══════════════════════ ФІНАНСОВА АНАЛІТИКА ══════════════════════
-function updateAnalytics() {
-  const activeOrders = orders.filter(o => !o.isArchived);
-  
-  let transitCost = 0;
-  let transitCount = 0;
-  let totalCny = 0;
-  let totalItems = 0;
-  let shipCost = 0;
-  let potentialProfit = 0;
-
-  activeOrders.forEach(o => {
-    const unitCost = calcUnitCost(o);
-    const qty = o.qty || 1;
-    const itemTotalUah = unitCost * qty;
-
-    totalCny += (o.priceCny || 0) * qty;
-    totalItems += qty;
-    shipCost += shipToUah(o);
-
-    if (o.status === 'transit' || o.status === 'wh-cn' || o.status === 'ordered') {
-      transitCost += itemTotalUah;
-      transitCount++;
-    }
-
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
-    potentialProfit += (sellPrice - unitCost) * qty;
-  });
-
-  document.getElementById("stat-transit-cost").textContent = transitCost.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
-  document.getElementById("stat-transit-count").textContent = `${transitCount} замовлень у процесі`;
-
-  document.getElementById("stat-total-cny").textContent = totalCny.toLocaleString("uk-UA", {maximumFractionDigits:1}) + " ¥";
-  document.getElementById("stat-total-items").textContent = `${totalItems} шт. у замовленнях`;
-
-  document.getElementById("stat-ship-cost").textContent = shipCost.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
-  document.getElementById("stat-profit-val").textContent = "+" + potentialProfit.toLocaleString("uk-UA", {maximumFractionDigits:0}) + " грн";
-
-  document.getElementById("cnt-active").textContent = activeOrders.length;
-  document.getElementById("cnt-archived").textContent = orders.filter(o => o.isArchived).length;
-}
-
-// ══════════════════════ ДОДАВАННЯ ТА КЕРУВАННЯ ══════════════════════
 function addOrder() {
   const name = document.getElementById("f-name").value.trim();
   const track = document.getElementById("f-track").value.trim();
@@ -599,11 +598,11 @@ function addOrder() {
   const img = document.getElementById("f-img").value.trim();
   const qty = parseFloat(document.getElementById("f-qty").value) || 1;
   const priceCny = parseFloat(document.getElementById("f-price-cny").value) || 0;
+  const orderDate = document.getElementById("f-order-date").value || new Date().toISOString().slice(0, 10);
   
   const today = getTodayRates();
-  const customCny = parseFloat(document.getElementById("f-custom-cny").value);
+  const customCny = parseFloat(document.getElementById("f-custom-cny")?.value);
   const lockedRateCny = (!isNaN(customCny) && customCny > 0) ? customCny : today.cny;
-  const lockedRateUsd = today.usd;
 
   const shipVal = parseFloat(document.getElementById("f-ship-val").value) || 0;
   const shipCur = document.getElementById("f-ship-cur").value;
@@ -611,23 +610,39 @@ function addOrder() {
   const status = document.getElementById("f-status").value;
   const eta = document.getElementById("f-eta").value;
 
-  if (!name) { alert("Введіть найменування товару!"); return; }
+  if (!name) { alert("Введіть назву товару!"); return; }
+
+  const initialStock = (status === "received") ? qty : 0;
+  const history = [];
+  if (initialStock > 0) {
+    history.push({
+      date: new Date().toLocaleString('uk-UA'),
+      user: "Система",
+      action: "Створення (Отримано)",
+      change: `+${initialStock}`,
+      balance: initialStock,
+      comment: "Початкове оприбуткування"
+    });
+  }
 
   orders.unshift({
     id: Date.now(),
     name,
+    orderDate,
     track,
     link,
     img,
     qty,
+    stock: initialStock,
     priceCny,
     rateCny: lockedRateCny,
     shippingVal: shipVal,
     shippingCur: shipCur,
-    rateUsd: lockedRateUsd,
+    rateUsd: today.usd,
     markup,
     status,
     eta,
+    history,
     isArchived: false,
     isAutoShip: false
   });
@@ -641,21 +656,146 @@ function addOrder() {
   document.getElementById("f-price-cny").value = "";
   document.getElementById("f-ship-val").value = "";
   document.getElementById("f-eta").value = "";
+  document.getElementById("f-order-date").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("f-cny-date-lbl").textContent = "НБУ";
+  fetchNbuRates();
   formCalc();
 }
 
-function toggleArchive(id) {
+function duplicateOrder(id) {
   const o = orders.find(x => x.id === id);
-  if (o) {
-    o.isArchived = !o.isArchived;
-    cloudSave();
-  }
+  if (!o) return;
+
+  switchView('orders');
+  document.getElementById("f-name").value = o.name || "";
+  document.getElementById("f-link").value = o.link || "";
+  document.getElementById("f-img").value = o.img || "";
+  document.getElementById("f-qty").value = o.qty || 1;
+  document.getElementById("f-price-cny").value = o.priceCny || "";
+  document.getElementById("f-markup").value = o.markup || 50;
+  document.getElementById("f-status").value = "ordered";
+  document.getElementById("f-track").value = "";
+  document.getElementById("f-ship-val").value = "";
+  document.getElementById("f-order-date").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("f-track").focus();
+  fetchNbuRates();
+  formCalc();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function deleteOrder(id) {
-  if (!confirm("Видалити це замовлення з бази?")) return;
-  orders = orders.filter(o => o.id !== id);
+function openStockModal(id, direction) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  document.getElementById("sm-order-id").value = id;
+  document.getElementById("sm-direction").value = direction;
+  document.getElementById("sm-item-name").textContent = o.name;
+  document.getElementById("sm-qty").value = 1;
+  document.getElementById("sm-comment").value = "";
+  
+  const savedUser = localStorage.getItem("golda_last_user") || "";
+  document.getElementById("sm-user").value = savedUser;
+
+  if (direction === "sub") {
+    document.getElementById("stock-modal-title").textContent = "📤 Списання зі складу";
+    document.getElementById("sm-submit-btn").textContent = "Списати";
+    document.getElementById("sm-submit-btn").style.background = "#c0392b";
+  } else {
+    document.getElementById("stock-modal-title").textContent = "📥 Додати на склад";
+    document.getElementById("sm-submit-btn").textContent = "Додати";
+    document.getElementById("sm-submit-btn").style.background = "#27ae60";
+  }
+
+  document.getElementById("stock-modal").style.display = "flex";
+  document.getElementById("sm-qty").focus();
+}
+
+function closeStockModal() {
+  document.getElementById("stock-modal").style.display = "none";
+}
+
+function submitStockChange() {
+  const id = parseInt(document.getElementById("sm-order-id").value);
+  const direction = document.getElementById("sm-direction").value;
+  const qty = parseInt(document.getElementById("sm-qty").value);
+  const user = document.getElementById("sm-user").value.trim() || "Невідомий";
+  const comment = document.getElementById("sm-comment").value.trim();
+
+  if (isNaN(qty) || qty <= 0) { alert("Введіть коректну кількість!"); return; }
+
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  const current = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
+  let newBalance = current;
+
+  if (direction === "sub") {
+    newBalance = Math.max(0, current - qty);
+  } else {
+    newBalance = current + qty;
+  }
+
+  o.stock = newBalance;
+  if (!o.history) o.history = [];
+
+  o.history.unshift({
+    date: new Date().toLocaleString('uk-UA'),
+    user,
+    action: direction === "sub" ? "Списання" : "Надходження",
+    change: direction === "sub" ? `-${qty}` : `+${qty}`,
+    balance: newBalance,
+    comment
+  });
+
+  localStorage.setItem("golda_last_user", user);
+  closeStockModal();
   cloudSave();
+}
+
+function viewHistory(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  document.getElementById("hist-item-title").textContent = o.name;
+  const container = document.getElementById("history-list-body");
+
+  if (!o.history || !o.history.length) {
+    container.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px">Історії змін ще немає</div>';
+  } else {
+    container.innerHTML = o.history.map(h => `
+      <div class="hist-item" style="border-left-color:${h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">
+        <div class="hist-date">${h.date} · <b>${h.user}</b></div>
+        <div style="font-size:12px;font-weight:700;margin:2px 0">
+          ${h.action}: <span style="color:${h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">${h.change} шт</span> (Залишок: ${h.balance} шт)
+        </div>
+        ${h.comment ? `<div style="color:#6b7c93;font-style:italic">"${h.comment}"</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  document.getElementById("history-modal").style.display = "flex";
+}
+
+function closeHistoryModal() {
+  document.getElementById("history-modal").style.display = "none";
+}
+
+function getTransitInfoForItem(itemName) {
+  if (!itemName) return null;
+  const clean = itemName.toLowerCase().trim();
+  const transitOrders = orders.filter(o => 
+    !o.isArchived && 
+    o.status !== "received" && 
+    (o.name || "").toLowerCase().trim() === clean
+  );
+
+  if (!transitOrders.length) return null;
+
+  const totalTransitQty = transitOrders.reduce((acc, cur) => acc + (cur.qty || 0), 0);
+  const etas = transitOrders.map(o => o.eta).filter(Boolean).sort();
+  const nearestEta = etas.length ? etas[0] : null;
+
+  return { qty: totalTransitQty, eta: nearestEta };
 }
 
 function openEditModal(id) {
@@ -667,7 +807,9 @@ function openEditModal(id) {
   document.getElementById("edit-track").value = o.track || "";
   document.getElementById("edit-link").value = o.link || "";
   document.getElementById("edit-img").value = o.img || "";
+  document.getElementById("edit-order-date").value = o.orderDate || "";
   document.getElementById("edit-qty").value = o.qty || 1;
+  document.getElementById("edit-stock").value = (o.stock !== undefined) ? o.stock : o.qty;
   document.getElementById("edit-price-cny").value = o.priceCny || "";
   document.getElementById("edit-rate-cny").value = o.rateCny || 5.80;
   document.getElementById("edit-ship-val").value = o.shippingVal || "";
@@ -689,21 +831,61 @@ function saveEditedOrder() {
   const o = orders.find(x => x.id === id);
   if (!o) return;
 
+  const prevStatus = o.status;
+  const newStatus = document.getElementById("edit-status").value;
+
   o.name = document.getElementById("edit-name").value.trim();
   o.track = document.getElementById("edit-track").value.trim();
   o.link = document.getElementById("edit-link").value.trim();
   o.img = document.getElementById("edit-img").value.trim();
+  o.orderDate = document.getElementById("edit-order-date").value;
   o.qty = parseFloat(document.getElementById("edit-qty").value) || 1;
+  o.stock = parseInt(document.getElementById("edit-stock").value) || 0;
   o.priceCny = parseFloat(document.getElementById("edit-price-cny").value) || 0;
   o.rateCny = parseFloat(document.getElementById("edit-rate-cny").value) || 5.80;
   o.shippingVal = parseFloat(document.getElementById("edit-ship-val").value) || 0;
   o.shippingCur = document.getElementById("edit-ship-cur").value;
   o.rateUsd = parseFloat(document.getElementById("edit-rate-usd").value) || 41.50;
   o.markup = parseFloat(document.getElementById("edit-markup").value) || 50;
-  o.status = document.getElementById("edit-status").value;
+  o.status = newStatus;
   o.eta = document.getElementById("edit-eta").value;
 
+  if (prevStatus !== "received" && newStatus === "received") {
+    if (confirm(`Замовлення «${o.name}» отримано! Додати ${o.qty} шт на баланс складу?`)) {
+      o.stock = (o.stock || 0) + o.qty;
+      if (!o.history) o.history = [];
+      o.history.unshift({
+        date: new Date().toLocaleString('uk-UA'),
+        user: "Система",
+        action: "Оприбуткування",
+        change: `+${o.qty}`,
+        balance: o.stock,
+        comment: "Автоматично при отриманні замовлення"
+      });
+    }
+  }
+
   closeEditModal();
+  cloudSave();
+}
+
+function switchView(tab) {
+  activeTab = tab;
+  document.getElementById("view-stock").style.display = (tab === "stock") ? "block" : "none";
+  document.getElementById("view-orders").style.display = (tab === "orders") ? "block" : "none";
+  document.getElementById("btn-view-stock").classList.toggle("active", tab === "stock");
+  document.getElementById("btn-view-orders").classList.toggle("active", tab === "orders");
+  renderAll();
+}
+
+function toggleArchive(id) {
+  const o = orders.find(x => x.id === id);
+  if (o) { o.isArchived = !o.isArchived; cloudSave(); }
+}
+
+function deleteOrder(id) {
+  if (!confirm("Видалити позицію?")) return;
+  orders = orders.filter(o => o.id !== id);
   cloudSave();
 }
 
@@ -711,7 +893,7 @@ function setFilter(f) {
   currentFilter = f;
   document.querySelectorAll(".ftab").forEach(b => b.classList.remove("active"));
   event.target.classList.add("active");
-  renderTable();
+  renderOrders();
 }
 
 function viewImage(url) {
@@ -720,7 +902,6 @@ function viewImage(url) {
   document.getElementById("img-modal").style.display = "flex";
 }
 
-// ══════════════════════ ІМПОРТ НАКЛАДНОЇ КАРГО ══════════════════════
 function handleInvoiceUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -735,17 +916,13 @@ function handleInvoiceUpload(event) {
       const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: ''});
 
       let trackColIdx = -1, costColIdx = -1, headerRowIdx = -1;
-
       for (let r = 0; r < Math.min(25, rows.length); r++) {
         for (let c = 0; c < rows[r].length; c++) {
           const val = String(rows[r][c]).toLowerCase();
           if (val.includes('трек')) trackColIdx = c;
           if (val.includes('вартість') || val.includes('стоимость') || val.includes('сумма') || val.includes('ціна')) costColIdx = c;
         }
-        if (trackColIdx !== -1 && costColIdx !== -1) {
-          headerRowIdx = r;
-          break;
-        }
+        if (trackColIdx !== -1 && costColIdx !== -1) { headerRowIdx = r; break; }
       }
 
       if (trackColIdx === -1) trackColIdx = 2;
@@ -754,7 +931,6 @@ function handleInvoiceUpload(event) {
 
       let matchedCount = 0;
       const invoiceData = {};
-
       for (let r = headerRowIdx + 1; r < rows.length; r++) {
         const row = rows[r];
         if (!row || !row[trackColIdx]) continue;
@@ -786,9 +962,80 @@ function handleInvoiceUpload(event) {
   event.target.value = '';
 }
 
-// ══════════════════════ ВІДОБРАЖЕННЯ ТАБЛИЦІ ══════════════════════
-function renderTable() {
-  const tbody = document.getElementById("orders-body");
+function exportExcel() {
+  if (!orders.length) { alert("База порожня!"); return; }
+  const data = orders.map(o => ({
+    "Назва": o.name,
+    "Дата замовлення": o.orderDate || "",
+    "Трек": o.track || "",
+    "К-сть замовлення": o.qty,
+    "Залишок на складі": (o.stock !== undefined) ? o.stock : o.qty,
+    "Ціна ¥": o.priceCny,
+    "Курс ¥": o.rateCny,
+    "Доставка": o.shippingVal,
+    "Валюта доставки": o.shippingCur,
+    "Курс $": o.rateUsd,
+    "Собівартість шт (грн)": calcUnitCost(o).toFixed(2),
+    "Статус": o.status,
+    "ETA": o.eta || "",
+    "Архів": o.isArchived ? "Так" : "Ні"
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Замовлення");
+  XLSX.writeFile(wb, `База_Китай_Golda_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function exportBackupJSON() {
+  const blob = new Blob([JSON.stringify(orders, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Резервна_копія_Китай_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function renderAll() {
+  renderOrders();
+  renderStock();
+  updateAnalytics();
+}
+
+function updateAnalytics() {
+  const active = orders.filter(o => !o.isArchived);
+  let transitCost = 0, totalCny = 0, shipCost = 0, profit = 0;
+
+  active.forEach(o => {
+    const unitCost = calcUnitCost(o);
+    const qty = o.qty || 1;
+    totalCny += (o.priceCny || 0) * qty;
+    shipCost += shipToUah(o);
+    if (o.status !== 'received') transitCost += unitCost * qty;
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    profit += (sellPrice - unitCost) * qty;
+  });
+
+  const transitEl = document.getElementById("stat-transit-cost");
+  if (transitEl) transitEl.textContent = Math.round(transitCost).toLocaleString("uk-UA") + " грн";
+  const cnyEl = document.getElementById("stat-total-cny");
+  if (cnyEl) cnyEl.textContent = Math.round(totalCny).toLocaleString("uk-UA") + " ¥";
+  const shipEl = document.getElementById("stat-ship-cost");
+  if (shipEl) shipEl.textContent = Math.round(shipCost).toLocaleString("uk-UA") + " грн";
+  const profitEl = document.getElementById("stat-profit-val");
+  if (profitEl) profitEl.textContent = "+" + Math.round(profit).toLocaleString("uk-UA") + " грн";
+
+  const ordersBadge = document.getElementById("orders-badge");
+  if (ordersBadge) ordersBadge.textContent = active.length;
+  const stockBadge = document.getElementById("stock-badge");
+  if (stockBadge) stockBadge.textContent = orders.filter(o => (o.stock || 0) > 0).length;
+}
+
+function renderOrders() {
+  const desktopTbody = document.getElementById("orders-desktop-body");
+  const mobileContainer = document.getElementById("orders-mobile-body");
+  if (!desktopTbody || !mobileContainer) return;
+
   const q = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
 
   let filtered = orders.filter(o => {
@@ -798,17 +1045,10 @@ function renderTable() {
       if (o.isArchived || o.status !== currentFilter) return false;
     }
     if (q) {
-      const matchName = (o.name || "").toLowerCase().includes(q);
-      const matchTrack = (o.track || "").toLowerCase().includes(q);
-      if (!matchName && !matchTrack) return false;
+      if (!(o.name||"").toLowerCase().includes(q) && !(o.track||"").toLowerCase().includes(q)) return false;
     }
     return true;
   });
-
-  if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:25px;color:#aaa">Немає відповідних замовлень.</td></tr>';
-    return;
-  }
 
   const statusMap = {
     'ordered': '<span class="badge st-ordered">🟡 Замовлено</span>',
@@ -817,67 +1057,175 @@ function renderTable() {
     'received': '<span class="badge st-received">🟢 Отримано</span>'
   };
 
-  tbody.innerHTML = filtered.map(o => {
+  if (!filtered.length) {
+    desktopTbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:25px;color:#aaa">Немає замовлень</td></tr>';
+    mobileContainer.innerHTML = '<div style="text-align:center;padding:25px;color:#aaa">Немає замовлень</div>';
+    return;
+  }
+
+  desktopTbody.innerHTML = filtered.map(o => {
     const unitCost = calcUnitCost(o);
     const markup = o.markup || 50;
     const sellPrice = unitCost * (1 + markup / 100);
-    const unitProfit = sellPrice - unitCost;
-
-    const imgHtml = o.img 
-      ? `<img src="${o.img}" class="prod-img" onclick="viewImage('${o.img}')" title="Клікніть, щоб збільшити">`
-      : `<div class="prod-img">📷</div>`;
-
-    const trackHtml = o.track 
-      ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link" title="Відстежити на 17TRACK">${o.track} ↗</a>`
-      : `<span style="color:#bbb">—</span>`;
-
-    const linkHtml = o.link 
-      ? `<div style="margin-top:2px"><a href="${o.link}" target="_blank" class="ext-link">🔗 Посилання на товар</a></div>` 
-      : '';
-
-    const autoBadge = o.isAutoShip ? `<span class="badge-auto" title="З накладної карго">✓ карго</span>` : '';
+    const imgHtml = o.img ? `<img src="${o.img}" style="width:38px;height:38px;object-fit:cover;border-radius:4px;cursor:pointer" onclick="viewImage('${o.img}')">` : `📷`;
+    const trackHtml = o.track ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link">${o.track} ↗</a>` : `—`;
 
     return `
-      <tr class="${o.isArchived ? 'archived-row' : ''}">
+      <tr>
         <td style="text-align:center">${imgHtml}</td>
         <td>
           <b>${o.name}</b>
-          ${linkHtml}
+          ${o.link ? `<br><a href="${o.link}" target="_blank" style="font-size:10px;color:#1a6fa8">🔗 1688/товар</a>` : ''}
         </td>
+        <td style="font-size:11px;white-space:nowrap">${o.orderDate || '—'}</td>
         <td>${trackHtml}</td>
         <td style="text-align:center"><b>${o.qty}</b></td>
         <td>
-          <div>${Number(o.priceCny || 0).toFixed(2)} ¥</div>
-          <div class="calc-sub">курс: <b>${(o.rateCny || 5.80).toFixed(2)}</b></div>
+          <div>${Number(o.priceCny||0).toFixed(1)} ¥</div>
+          <div style="font-size:10px;color:#8a96a3">курс: <b>${(o.rateCny||5.80).toFixed(2)}</b></div>
         </td>
-        <td>
-          <div>
-            <b>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur === 'USD' ? '$' : o.shippingCur === 'CNY' ? '¥' : 'грн'}` : '0.00'}</b>
-            ${autoBadge}
-          </div>
-          <div class="calc-sub">≈ ${shipToUah(o).toFixed(2)} грн</div>
-        </td>
-        <td>
-          <div class="calc-res">${unitCost.toFixed(2)} грн</div>
-        </td>
-        <td>
-          <div class="price-tag">${sellPrice.toFixed(2)} грн</div>
-          <div class="profit-tag">+${markup}% (маржа: ${unitProfit.toFixed(1)} грн)</div>
-        </td>
+        <td>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur==='USD'?'$':'грн'}` : '0.00'}</td>
+        <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
+        <td style="color:#27ae60;font-weight:700">${sellPrice.toFixed(2)} грн</td>
         <td>${statusMap[o.status] || o.status}</td>
-        <td style="font-size:11px;white-space:nowrap">${o.eta || '—'}</td>
+        <td style="font-size:11px">${o.eta || '—'}</td>
         <td style="text-align:center;white-space:nowrap">
-          <button class="btn-icon" onclick="openEditModal(${o.id})" title="Редагувати">✏️</button>
-          <button class="btn-icon" onclick="toggleArchive(${o.id})" title="${o.isArchived ? 'Повернути з архіву' : 'Перемістити в архів'}">${o.isArchived ? '📂' : '🗄️'}</button>
-          <button class="btn-icon" onclick="deleteOrder(${o.id})" title="Видалити" style="color:#e74c3c">🗑</button>
+          <button class="btn" style="padding:2px 5px;background:none" onclick="duplicateOrder(${o.id})" title="Дублювати">📋</button>
+          <button class="btn" style="padding:2px 5px;background:none" onclick="openEditModal(${o.id})" title="Редагувати">✏️</button>
+          <button class="btn" style="padding:2px 5px;background:none" onclick="toggleArchive(${o.id})" title="В архів">${o.isArchived?'📂':'🗄️'}</button>
+          <button class="btn" style="padding:2px 5px;background:none;color:#e74c3c" onclick="deleteOrder(${o.id})">🗑</button>
         </td>
       </tr>
     `;
   }).join('');
+
+  mobileContainer.innerHTML = filtered.map(o => {
+    const unitCost = calcUnitCost(o);
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
+
+    return `
+      <div class="m-card">
+        ${imgHtml}
+        <div class="m-card-body">
+          <div class="m-card-title">${o.name}</div>
+          <div style="font-size:10px;color:#8a96a3;margin-bottom:2px">Замовлено: <b>${o.orderDate || '—'}</b></div>
+          <div style="margin:2px 0">${statusMap[o.status] || o.status} ${o.track ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link" style="font-size:10px">${o.track} ↗</a>` : ''}</div>
+          <div class="m-card-row">
+            <span>К-сть: <b>${o.qty} шт</b></span>
+            <span>Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн</b></span>
+          </div>
+          <div class="m-card-row" style="border-top:1px dashed #eee;padding-top:4px;margin-top:4px">
+            <span style="color:#27ae60;font-weight:700">Продаж: ${sellPrice.toFixed(1)} грн</span>
+            <div style="display:flex;gap:3px">
+              <button class="btn" style="padding:3px 6px;font-size:11px;background:#f0f2f5" onclick="duplicateOrder(${o.id})" title="Дублювати">📋</button>
+              <button class="btn" style="padding:3px 6px;font-size:11px;background:#f0f2f5" onclick="openEditModal(${o.id})">✏️</button>
+              <button class="btn" style="padding:3px 6px;font-size:11px;background:#f0f2f5" onclick="toggleArchive(${o.id})">${o.isArchived?'📂':'🗄️'}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-checkSavedAuth();
-formCalc();
+function renderStock() {
+  const desktopTbody = document.getElementById("stock-desktop-body");
+  const mobileContainer = document.getElementById("stock-mobile-body");
+  if (!desktopTbody || !mobileContainer) return;
+
+  const q = (document.getElementById("search-stock")?.value || "").toLowerCase().trim();
+
+  let stockItems = orders.filter(o => {
+    if (q && !(o.name||"").toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (!stockItems.length) {
+    desktopTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:25px;color:#aaa">Склад порожній</td></tr>';
+    mobileContainer.innerHTML = '<div style="text-align:center;padding:25px;color:#aaa">Склад порожній</div>';
+    return;
+  }
+
+  desktopTbody.innerHTML = stockItems.map(o => {
+    const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
+    const unitCost = calcUnitCost(o);
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    const totalStockWorth = stockVal * unitCost;
+    const imgHtml = o.img ? `<img src="${o.img}" style="width:40px;height:40px;object-fit:cover;border-radius:4px" onclick="viewImage('${o.img}')">` : `📷`;
+
+    const transit = getTransitInfoForItem(o.name);
+    const transitHtml = transit ? `<span class="badge-transit-stock">🔵 ${transit.qty} шт ${transit.eta ? `(ETA: ${transit.eta})` : ''}</span>` : '<span style="color:#ccc;font-size:11px">немає</span>';
+
+    return `
+      <tr style="${stockVal <= 2 ? 'background:#fff8f8' : ''}">
+        <td style="text-align:center">${imgHtml}</td>
+        <td>
+          <b>${o.name}</b>
+          ${stockVal <= 2 ? '<span style="color:#e74c3c;font-size:10px;margin-left:6px;font-weight:700">⚠️ Закінчується!</span>' : ''}
+        </td>
+        <td>${transitHtml}</td>
+        <td>${unitCost.toFixed(2)} грн</td>
+        <td style="color:#27ae60;font-weight:700">${sellPrice.toFixed(2)} грн</td>
+        <td style="text-align:center">
+          <div class="qty-ctrl">
+            <button class="btn-qty" onclick="openStockModal(${o.id}, 'sub')">−</button>
+            <span class="qty-val">${stockVal}</span>
+            <button class="btn-qty" onclick="openStockModal(${o.id}, 'add')">+</button>
+          </div>
+        </td>
+        <td style="font-weight:700">${Math.round(totalStockWorth).toLocaleString('uk-UA')} грн</td>
+        <td style="text-align:center">
+          <button class="btn" style="padding:2px 6px;font-size:11px;background:#f0f2f5" onclick="viewHistory(${o.id})" title="Історія списань">📜 Історія</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  mobileContainer.innerHTML = stockItems.map(o => {
+    const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
+    const unitCost = calcUnitCost(o);
+    const markup = o.markup || 50;
+    const sellPrice = unitCost * (1 + markup / 100);
+    const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
+
+    const transit = getTransitInfoForItem(o.name);
+    const transitHtml = transit ? `<div style="margin-top:2px"><span class="badge-transit-stock">🔵 В дорозі: ${transit.qty} шт ${transit.eta ? `(${transit.eta})` : ''}</span></div>` : '';
+
+    return `
+      <div class="m-card" style="${stockVal <= 2 ? 'border-color:#f5c6cb;background:#fffdfd' : ''}">
+        ${imgHtml}
+        <div class="m-card-body">
+          <div class="m-card-title">${o.name}</div>
+          ${transitHtml}
+          <div style="font-size:11px;color:#8a96a3;margin:4px 0">Собівартість: ${unitCost.toFixed(1)} грн | Продаж: <b style="color:#27ae60">${sellPrice.toFixed(1)} грн</b></div>
+          <div class="m-card-row">
+            <div>
+              <span style="font-size:11px;color:#6b7c93">Залишок:</span>
+              <button class="btn" style="padding:1px 5px;font-size:10px;background:#f0f2f5;margin-left:4px" onclick="viewHistory(${o.id})">📜 Історія</button>
+            </div>
+            <div class="qty-ctrl">
+              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModal(${o.id}, 'sub')">−</button>
+              <span class="qty-val" style="min-width:38px;font-size:15px">${stockVal}</span>
+              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModal(${o.id}, 'add')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Запуск після повного завантаження сторінки
+window.addEventListener("DOMContentLoaded", () => {
+  const orderDateEl = document.getElementById("f-order-date");
+  if (orderDateEl) orderDateEl.value = new Date().toISOString().slice(0, 10);
+  checkSavedAuth();
+  fetchNbuRates();
+  formCalc();
+});
 </script>
 </body>
 </html>
