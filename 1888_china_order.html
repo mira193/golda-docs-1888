@@ -61,6 +61,7 @@ input:focus,select:focus{outline:none;border-color:#2c3e50;background:#fff}
 
 .transit-batches{display:flex;flex-direction:column;gap:3px}
 .badge-batch{background:#eef6fc;color:#1a6fa8;border:1px solid #c0dcf2;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;width:fit-content}
+.badge-eta{background:#ebf3fb;color:#1a6fa8;border:1px solid #bdd7ee;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
 
 .track-link{font-family:monospace;font-size:11px;font-weight:700;color:#1a6fa8;text-decoration:none;background:#f0f2f5;padding:2px 5px;border-radius:3px}
 
@@ -72,7 +73,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
 
 .card-list{display:flex;flex-direction:column;gap:8px}
 .m-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:10px;display:flex;gap:10px;align-items:flex-start}
-.m-card-img{width:60px;height:60px;border-radius:4px;object-fit:cover;border:1px solid #dde2ea;flex-shrink:0}
+.m-card-img{width:64px;height:64px;border-radius:4px;object-fit:cover;border:1px solid #dde2ea;flex-shrink:0}
 .m-card-body{flex:1;min-width:0}
 .m-card-title{font-size:13px;font-weight:700;color:#2c3e50;margin-bottom:3px;word-break:break-word}
 .m-card-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-top:4px}
@@ -145,7 +146,6 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
 
   <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ (ПЕРЕДНЯ ВКЛАДКА) ══════════════════════ -->
   <div id="view-stock">
-    <!-- ФОРМА ПРЯМОГО ДОДАВАННЯ НА СКЛАД -->
     <div class="sec" style="background:#f4f9fd;border-color:#b8d9f0">
       <div class="st" style="color:#1a6fa8">➕ Додати товар напряму на склад (вручну)</div>
       <div class="row">
@@ -654,7 +654,6 @@ function formCalc() {
   if (prevEl) prevEl.textContent = `Собівартість: ${unitCost.toFixed(2)} грн / шт`;
 }
 
-// ══════════════════════ ПРЯМЕ ДОДАВАННЯ НА СКЛАД (ВРУЧНУ) ══════════════════════
 function addDirectStockItem() {
   const name = document.getElementById("sf-name").value.trim();
   const stock = parseInt(document.getElementById("sf-stock").value) || 0;
@@ -1186,7 +1185,7 @@ function renderOrders() {
         <td>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur==='USD'?'$':'грн'}` : '0.00'}</td>
         <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
         <td>${statusMap[o.status] || o.status}</td>
-        <td style="font-size:11px">${o.eta || '—'}</td>
+        <td style="font-size:11px">${o.eta ? `<b>${o.eta}</b>` : '—'}</td>
         <td style="text-align:center;white-space:nowrap">
           <button class="btn" style="padding:2px 5px;background:none" onclick="duplicateOrder(${o.id})" title="Дублювати">📋</button>
           <button class="btn" style="padding:2px 5px;background:none" onclick="openEditModal(${o.id})" title="Редагувати">✏️</button>
@@ -1201,13 +1200,22 @@ function renderOrders() {
     const unitCost = calcUnitCost(o);
     const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
 
+    // Дата ETA в мобільній картці
+    const etaBadge = (o.status !== 'received' && o.eta) 
+      ? `<span class="badge-eta">📅 ETA: ${o.eta}</span>` 
+      : '';
+
     return `
       <div class="m-card">
         ${imgHtml}
         <div class="m-card-body">
           <div class="m-card-title">${o.name}</div>
-          <div style="font-size:10px;color:#8a96a3;margin-bottom:2px">Замовлено: <b>${o.orderDate || '—'}</b></div>
-          <div style="margin:2px 0">${statusMap[o.status] || o.status} ${o.track ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link" style="font-size:10px">${o.track} ↗</a>` : ''}</div>
+          <div style="font-size:10px;color:#8a96a3;margin-bottom:3px">Замовлено: <b>${o.orderDate || '—'}</b></div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:3px 0">
+            ${statusMap[o.status] || o.status}
+            ${etaBadge}
+            ${o.track ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link" style="font-size:10px">${o.track} ↗</a>` : ''}
+          </div>
           <div class="m-card-row">
             <span>К-сть: <b>${o.qty} шт</b></span>
             <span>Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн</b></span>
