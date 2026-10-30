@@ -36,7 +36,7 @@ input:focus,select:focus{outline:none;border-color:#2c3e50;background:#fff}
 .rate-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#1a6fa8}
 .rate-item input{width:60px;text-align:center;padding:3px;font-weight:700}
 
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:8px;margin-bottom:12px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:8px;margin-bottom:12px}
 .stat-card{background:#fff;border:1px solid #dde2ea;border-radius:6px;padding:10px 12px}
 .stat-card .lbl{font-size:9px;font-weight:700;color:#8a96a3;text-transform:uppercase}
 .stat-card .val{font-size:16px;font-weight:700;color:#2c3e50;margin-top:2px}
@@ -58,7 +58,9 @@ input:focus,select:focus{outline:none;border-color:#2c3e50;background:#fff}
 .st-wh-cn{background:#ffe8d6;color:#a04000;border:1px solid #fcd5b5}
 .st-transit{background:#cce5ff;color:#004085;border:1px solid #b8daff}
 .st-received{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.badge-transit-stock{background:#e8f4fd;color:#1a6fa8;border:1px solid #b8d9f0;font-size:10px;padding:2px 5px;border-radius:4px;display:inline-block}
+
+.transit-batches{display:flex;flex-direction:column;gap:3px}
+.badge-batch{background:#eef6fc;color:#1a6fa8;border:1px solid #c0dcf2;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;width:fit-content}
 
 .track-link{font-family:monospace;font-size:11px;font-weight:700;color:#1a6fa8;text-decoration:none;background:#f0f2f5;padding:2px 5px;border-radius:3px}
 
@@ -100,12 +102,12 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
 </head>
 <body>
 
-<!-- АВТОРИЗАЦІЯ (ВІКНО ВХОДУ) -->
+<!-- АВТОРИЗАЦІЯ -->
 <div id="auth-overlay" style="display:flex">
   <div class="auth-card">
     <h2 style="font-size:16px;color:#2c3e50;margin-bottom:6px">🔐 Вхід у систему</h2>
     <p style="font-size:11px;color:#8a96a3;margin-bottom:12px">Введіть ключ доступу</p>
-    <input type="password" id="token-input" placeholder="пароль" style="text-align:center;font-size:15px;margin-bottom:10px" onkeypress="if(event.key==='Enter')login()">
+    <input type="password" id="token-input" placeholder="GA2026china" style="text-align:center;font-size:15px;margin-bottom:10px" onkeypress="if(event.key==='Enter')login()">
     <button class="btn btn-primary" style="width:100%" onclick="login()">Увійти</button>
     <div id="auth-err" style="color:#e74c3c;font-size:11px;margin-top:8px;display:none">Невірний ключ доступу</div>
   </div>
@@ -145,7 +147,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
   <div id="view-stock">
     <div class="sec" style="background:#eef6fc;border-color:#b8d9f0">
       <div style="font-size:12px;font-weight:700;color:#1a6fa8">📦 Складський облік фактичних залишків</div>
-      <div style="font-size:11px;color:#5a8db5;margin-top:2px">Відображається наявність на складі та очікувані поставки. Кожна зміна кількості записується в історію.</div>
+      <div style="font-size:11px;color:#5a8db5;margin-top:2px">Відображається наявність на складі та очікувані партії товарів у дорозі по кожній даті окремо.</div>
     </div>
 
     <input type="text" class="search-input" id="search-stock" placeholder="🔍 Швидкий пошук товару на складі..." style="margin-bottom:10px" oninput="renderStock()">
@@ -156,9 +158,8 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
           <tr>
             <th style="width:50px;text-align:center">Фото</th>
             <th>Товар</th>
-            <th>Очікується в дорозі</th>
+            <th>Очікується в дорозі (партії)</th>
             <th>Собівартість / шт</th>
-            <th>Ціна продажу</th>
             <th style="text-align:center;width:150px">Фактичний залишок</th>
             <th>Сума на складі</th>
             <th style="text-align:center">Журнал</th>
@@ -177,7 +178,6 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
       <div class="stat-card"><div class="lbl">В дорозі / склад CN</div><div class="val" id="stat-transit-cost">0 грн</div></div>
       <div class="stat-card"><div class="lbl">Закупівля за місяць</div><div class="val" id="stat-total-cny">0 ¥</div></div>
       <div class="stat-card"><div class="lbl">Доставка карго</div><div class="val" id="stat-ship-cost">0 грн</div></div>
-      <div class="stat-card"><div class="lbl">Очікуваний прибуток</div><div class="val" id="stat-profit-val" style="color:#27ae60">0 грн</div></div>
     </div>
 
     <div class="sec" style="background:#fdf9ed;border-color:#f0c960;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -194,7 +194,16 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
         <div class="f w3"><label>Назва товару *</label><input id="f-name" placeholder="напр. Сопло карбід бору 4мм"></div>
         <div class="f w2"><label>Китайський трек-номер</label><input id="f-track" placeholder="435192078970166" style="font-family:monospace;font-weight:700"></div>
         <div class="f w2"><label>Посилання на товар (1688/Taobao)</label><input id="f-link" placeholder="https://..."></div>
-        <div class="f w2"><label>Посилання на фото (URL)</label><input id="f-img" placeholder="https://..."></div>
+        <div class="f w2">
+          <label>Фото товару (URL або файл)</label>
+          <div style="display:flex;gap:4px">
+            <input id="f-img" placeholder="https://...">
+            <label class="btn btn-sec" style="padding:6px 8px;font-size:11px;cursor:pointer" title="Завантажити картинку з комп'ютера">
+              📁
+              <input type="file" accept="image/*" style="display:none" onchange="handleImageFile(event, 'f-img')">
+            </label>
+          </div>
+        </div>
       </div>
       <div class="row">
         <div class="f" style="min-width:125px">
@@ -213,7 +222,6 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
             <select id="f-ship-cur" style="width:70px" onchange="formCalc()"><option value="USD">$</option><option value="UAH">грн</option><option value="CNY">¥</option></select>
           </div>
         </div>
-        <div class="f"><label>Націнка %</label><input type="number" id="f-markup" value="50" step="5" oninput="formCalc()"></div>
         <div class="f w2"><label>Статус</label>
           <select id="f-status">
             <option value="ordered">🟡 Замовлено</option>
@@ -222,7 +230,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
             <option value="received">🟢 Отримано</option>
           </select>
         </div>
-        <div class="f"><label>ETA</label><input type="date" id="f-eta"></div>
+        <div class="f"><label>ETA (Прибуття)</label><input type="date" id="f-eta"></div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
         <div style="font-size:11px;color:#1a6fa8;font-weight:700" id="f-calc-preview">Собівартість: 0.00 грн / шт</div>
@@ -252,7 +260,6 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
             <th>Ціна ¥</th>
             <th>Доставка</th>
             <th>Собівартість</th>
-            <th>Ціна продажу</th>
             <th>Статус</th>
             <th>ETA</th>
             <th style="text-align:center">Дії</th>
@@ -276,10 +283,10 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
     <div style="font-size:12px;font-weight:700;margin-bottom:8px" id="sm-item-name"></div>
     <div class="row">
       <div class="f"><label>Кількість (шт) *</label><input type="number" id="sm-qty" value="1" min="1" autofocus></div>
-      <div class="f"><label>Хто змінив (ПІБ / ініціали) *</label><input id="sm-user" placeholder="ім'я"></div>
+      <div class="f"><label>Хто змінив (ПІБ / ініціали) *</label><input id="sm-user" placeholder="напр. Влад"></div>
     </div>
     <div class="row">
-      <div class="f"><label>Коментар / Призначення</label><input id="sm-comment" placeholder="напр. на збірку камери GA-95, продаж..."></div>
+      <div class="f"><label>Коментар / Призначення</label><input id="sm-comment" placeholder="напр. на збірку камери GA-95..."></div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
       <button class="btn" style="background:#eee" onclick="closeStockModal()">Скасувати</button>
@@ -307,7 +314,16 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
       <div class="f w2"><label>Трек-номер</label><input id="edit-track" style="font-family:monospace"></div>
     </div>
     <div class="row">
-      <div class="f"><label>Посилання на фото</label><input id="edit-img"></div>
+      <div class="f">
+        <label>Фото товару (URL або файл)</label>
+        <div style="display:flex;gap:4px">
+          <input id="edit-img">
+          <label class="btn btn-sec" style="padding:6px 8px;font-size:11px;cursor:pointer" title="Завантажити нове фото">
+            📁
+            <input type="file" accept="image/*" style="display:none" onchange="handleImageFile(event, 'edit-img')">
+          </label>
+        </div>
+      </div>
       <div class="f"><label>Посилання на товар</label><input id="edit-link"></div>
     </div>
     <div class="row">
@@ -332,7 +348,6 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
         </div>
       </div>
       <div class="f"><label>Курс $ (для доставки)</label><input type="number" id="edit-rate-usd" step="0.1"></div>
-      <div class="f"><label>Націнка %</label><input type="number" id="edit-markup" step="5"></div>
     </div>
     <div class="row">
       <div class="f"><label>Статус</label>
@@ -367,6 +382,33 @@ let userToken = "";
 let orders = [];
 let currentFilter = "active";
 let activeTab = "stock";
+
+function handleImageFile(event, targetInputId) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement("canvas");
+      const maxDim = 320;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+      else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+      
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      
+      const inputEl = document.getElementById(targetInputId);
+      if (inputEl) inputEl.value = compressedDataUrl;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 async function getNbuRatesForDate(dateStr) {
   if (!dateStr) return null;
@@ -606,7 +648,6 @@ function addOrder() {
 
   const shipVal = parseFloat(document.getElementById("f-ship-val").value) || 0;
   const shipCur = document.getElementById("f-ship-cur").value;
-  const markup = parseFloat(document.getElementById("f-markup").value) || 50;
   const status = document.getElementById("f-status").value;
   const eta = document.getElementById("f-eta").value;
 
@@ -639,7 +680,6 @@ function addOrder() {
     shippingVal: shipVal,
     shippingCur: shipCur,
     rateUsd: today.usd,
-    markup,
     status,
     eta,
     history,
@@ -672,7 +712,6 @@ function duplicateOrder(id) {
   document.getElementById("f-img").value = o.img || "";
   document.getElementById("f-qty").value = o.qty || 1;
   document.getElementById("f-price-cny").value = o.priceCny || "";
-  document.getElementById("f-markup").value = o.markup || 50;
   document.getElementById("f-status").value = "ordered";
   document.getElementById("f-track").value = "";
   document.getElementById("f-ship-val").value = "";
@@ -780,8 +819,17 @@ function closeHistoryModal() {
   document.getElementById("history-modal").style.display = "none";
 }
 
-function getTransitInfoForItem(itemName) {
-  if (!itemName) return null;
+function formatShortDate(dStr) {
+  if (!dStr) return '';
+  const parts = dStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}.${parts[1]}.${parts[0].slice(2)}`;
+  }
+  return dStr;
+}
+
+function getTransitBatchesForItem(itemName) {
+  if (!itemName) return [];
   const clean = itemName.toLowerCase().trim();
   const transitOrders = orders.filter(o => 
     !o.isArchived && 
@@ -789,13 +837,11 @@ function getTransitInfoForItem(itemName) {
     (o.name || "").toLowerCase().trim() === clean
   );
 
-  if (!transitOrders.length) return null;
-
-  const totalTransitQty = transitOrders.reduce((acc, cur) => acc + (cur.qty || 0), 0);
-  const etas = transitOrders.map(o => o.eta).filter(Boolean).sort();
-  const nearestEta = etas.length ? etas[0] : null;
-
-  return { qty: totalTransitQty, eta: nearestEta };
+  return transitOrders.map(o => ({
+    qty: o.qty || 1,
+    eta: o.eta ? formatShortDate(o.eta) : null,
+    status: o.status
+  }));
 }
 
 function openEditModal(id) {
@@ -815,7 +861,6 @@ function openEditModal(id) {
   document.getElementById("edit-ship-val").value = o.shippingVal || "";
   document.getElementById("edit-ship-cur").value = o.shippingCur || "USD";
   document.getElementById("edit-rate-usd").value = o.rateUsd || 41.50;
-  document.getElementById("edit-markup").value = o.markup || 50;
   document.getElementById("edit-status").value = o.status || "ordered";
   document.getElementById("edit-eta").value = o.eta || "";
 
@@ -846,7 +891,6 @@ function saveEditedOrder() {
   o.shippingVal = parseFloat(document.getElementById("edit-ship-val").value) || 0;
   o.shippingCur = document.getElementById("edit-ship-cur").value;
   o.rateUsd = parseFloat(document.getElementById("edit-rate-usd").value) || 41.50;
-  o.markup = parseFloat(document.getElementById("edit-markup").value) || 50;
   o.status = newStatus;
   o.eta = document.getElementById("edit-eta").value;
 
@@ -1003,7 +1047,7 @@ function renderAll() {
 
 function updateAnalytics() {
   const active = orders.filter(o => !o.isArchived);
-  let transitCost = 0, totalCny = 0, shipCost = 0, profit = 0;
+  let transitCost = 0, totalCny = 0, shipCost = 0;
 
   active.forEach(o => {
     const unitCost = calcUnitCost(o);
@@ -1011,9 +1055,6 @@ function updateAnalytics() {
     totalCny += (o.priceCny || 0) * qty;
     shipCost += shipToUah(o);
     if (o.status !== 'received') transitCost += unitCost * qty;
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
-    profit += (sellPrice - unitCost) * qty;
   });
 
   const transitEl = document.getElementById("stat-transit-cost");
@@ -1022,8 +1063,6 @@ function updateAnalytics() {
   if (cnyEl) cnyEl.textContent = Math.round(totalCny).toLocaleString("uk-UA") + " ¥";
   const shipEl = document.getElementById("stat-ship-cost");
   if (shipEl) shipEl.textContent = Math.round(shipCost).toLocaleString("uk-UA") + " грн";
-  const profitEl = document.getElementById("stat-profit-val");
-  if (profitEl) profitEl.textContent = "+" + Math.round(profit).toLocaleString("uk-UA") + " грн";
 
   const ordersBadge = document.getElementById("orders-badge");
   if (ordersBadge) ordersBadge.textContent = active.length;
@@ -1058,15 +1097,13 @@ function renderOrders() {
   };
 
   if (!filtered.length) {
-    desktopTbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:25px;color:#aaa">Немає замовлень</td></tr>';
+    desktopTbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:25px;color:#aaa">Немає замовлень</td></tr>';
     mobileContainer.innerHTML = '<div style="text-align:center;padding:25px;color:#aaa">Немає замовлень</div>';
     return;
   }
 
   desktopTbody.innerHTML = filtered.map(o => {
     const unitCost = calcUnitCost(o);
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
     const imgHtml = o.img ? `<img src="${o.img}" style="width:38px;height:38px;object-fit:cover;border-radius:4px;cursor:pointer" onclick="viewImage('${o.img}')">` : `📷`;
     const trackHtml = o.track ? `<a href="https://t.17track.net/en#nums=${encodeURIComponent(o.track)}" target="_blank" class="track-link">${o.track} ↗</a>` : `—`;
 
@@ -1086,7 +1123,6 @@ function renderOrders() {
         </td>
         <td>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur==='USD'?'$':'грн'}` : '0.00'}</td>
         <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
-        <td style="color:#27ae60;font-weight:700">${sellPrice.toFixed(2)} грн</td>
         <td>${statusMap[o.status] || o.status}</td>
         <td style="font-size:11px">${o.eta || '—'}</td>
         <td style="text-align:center;white-space:nowrap">
@@ -1101,8 +1137,6 @@ function renderOrders() {
 
   mobileContainer.innerHTML = filtered.map(o => {
     const unitCost = calcUnitCost(o);
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
     const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
 
     return `
@@ -1116,8 +1150,7 @@ function renderOrders() {
             <span>К-сть: <b>${o.qty} шт</b></span>
             <span>Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн</b></span>
           </div>
-          <div class="m-card-row" style="border-top:1px dashed #eee;padding-top:4px;margin-top:4px">
-            <span style="color:#27ae60;font-weight:700">Продаж: ${sellPrice.toFixed(1)} грн</span>
+          <div class="m-card-row" style="border-top:1px dashed #eee;padding-top:4px;margin-top:4px;justify-content:flex-end">
             <div style="display:flex;gap:3px">
               <button class="btn" style="padding:3px 6px;font-size:11px;background:#f0f2f5" onclick="duplicateOrder(${o.id})" title="Дублювати">📋</button>
               <button class="btn" style="padding:3px 6px;font-size:11px;background:#f0f2f5" onclick="openEditModal(${o.id})">✏️</button>
@@ -1143,7 +1176,7 @@ function renderStock() {
   });
 
   if (!stockItems.length) {
-    desktopTbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:25px;color:#aaa">Склад порожній</td></tr>';
+    desktopTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:25px;color:#aaa">Склад порожній</td></tr>';
     mobileContainer.innerHTML = '<div style="text-align:center;padding:25px;color:#aaa">Склад порожній</div>';
     return;
   }
@@ -1151,13 +1184,16 @@ function renderStock() {
   desktopTbody.innerHTML = stockItems.map(o => {
     const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
     const unitCost = calcUnitCost(o);
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
     const totalStockWorth = stockVal * unitCost;
     const imgHtml = o.img ? `<img src="${o.img}" style="width:40px;height:40px;object-fit:cover;border-radius:4px" onclick="viewImage('${o.img}')">` : `📷`;
 
-    const transit = getTransitInfoForItem(o.name);
-    const transitHtml = transit ? `<span class="badge-transit-stock">🔵 ${transit.qty} шт ${transit.eta ? `(ETA: ${transit.eta})` : ''}</span>` : '<span style="color:#ccc;font-size:11px">немає</span>';
+    const batches = getTransitBatchesForItem(o.name);
+    let transitHtml = '<span style="color:#ccc;font-size:11px">—</span>';
+    if (batches.length) {
+      transitHtml = `<div class="transit-batches">` + 
+        batches.map(b => `<span class="badge-batch">🔵 ${b.qty} шт — ${b.eta || (b.status === 'ordered' ? 'замовлено' : 'склад CN')}</span>`).join('') +
+        `</div>`;
+    }
 
     return `
       <tr style="${stockVal <= 2 ? 'background:#fff8f8' : ''}">
@@ -1167,8 +1203,7 @@ function renderStock() {
           ${stockVal <= 2 ? '<span style="color:#e74c3c;font-size:10px;margin-left:6px;font-weight:700">⚠️ Закінчується!</span>' : ''}
         </td>
         <td>${transitHtml}</td>
-        <td>${unitCost.toFixed(2)} грн</td>
-        <td style="color:#27ae60;font-weight:700">${sellPrice.toFixed(2)} грн</td>
+        <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
         <td style="text-align:center">
           <div class="qty-ctrl">
             <button class="btn-qty" onclick="openStockModal(${o.id}, 'sub')">−</button>
@@ -1187,12 +1222,15 @@ function renderStock() {
   mobileContainer.innerHTML = stockItems.map(o => {
     const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
     const unitCost = calcUnitCost(o);
-    const markup = o.markup || 50;
-    const sellPrice = unitCost * (1 + markup / 100);
     const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
 
-    const transit = getTransitInfoForItem(o.name);
-    const transitHtml = transit ? `<div style="margin-top:2px"><span class="badge-transit-stock">🔵 В дорозі: ${transit.qty} шт ${transit.eta ? `(${transit.eta})` : ''}</span></div>` : '';
+    const batches = getTransitBatchesForItem(o.name);
+    let transitHtml = '';
+    if (batches.length) {
+      transitHtml = `<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">` +
+        batches.map(b => `<span class="badge-batch" style="font-size:10px">🔵 ${b.qty} шт — ${b.eta || (b.status === 'ordered' ? 'замовлено' : 'склад CN')}</span>`).join('') +
+        `</div>`;
+    }
 
     return `
       <div class="m-card" style="${stockVal <= 2 ? 'border-color:#f5c6cb;background:#fffdfd' : ''}">
@@ -1200,7 +1238,7 @@ function renderStock() {
         <div class="m-card-body">
           <div class="m-card-title">${o.name}</div>
           ${transitHtml}
-          <div style="font-size:11px;color:#8a96a3;margin:4px 0">Собівартість: ${unitCost.toFixed(1)} грн | Продаж: <b style="color:#27ae60">${sellPrice.toFixed(1)} грн</b></div>
+          <div style="font-size:11px;color:#8a96a3;margin:4px 0">Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн / шт</b></div>
           <div class="m-card-row">
             <div>
               <span style="font-size:11px;color:#6b7c93">Залишок:</span>
@@ -1218,7 +1256,6 @@ function renderStock() {
   }).join('');
 }
 
-// Запуск після повного завантаження сторінки
 window.addEventListener("DOMContentLoaded", () => {
   const orderDateEl = document.getElementById("f-order-date");
   if (orderDateEl) orderDateEl.value = new Date().toISOString().slice(0, 10);
