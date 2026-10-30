@@ -143,11 +143,29 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
     </div>
   </div>
 
-  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ ══════════════════════ -->
+  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ (ПЕРЕДНЯ ВКЛАДКА) ══════════════════════ -->
   <div id="view-stock">
-    <div class="sec" style="background:#eef6fc;border-color:#b8d9f0">
-      <div style="font-size:12px;font-weight:700;color:#1a6fa8">📦 Складський облік фактичних залишків</div>
-      <div style="font-size:11px;color:#5a8db5;margin-top:2px">Відображається наявність на складі та очікувані партії товарів у дорозі по кожній даті окремо.</div>
+    <!-- ФОРМА ПРЯМОГО ДОДАВАННЯ НА СКЛАД -->
+    <div class="sec" style="background:#f4f9fd;border-color:#b8d9f0">
+      <div class="st" style="color:#1a6fa8">➕ Додати товар напряму на склад (вручну)</div>
+      <div class="row">
+        <div class="f w3"><label>Назва товару *</label><input id="sf-name" placeholder="напр. Фітинг кутовий 1/4, рукавички..."></div>
+        <div class="f"><label>Залишок (шт) *</label><input type="number" id="sf-stock" value="1" min="0"></div>
+        <div class="f"><label>Собівартість шт (грн)</label><input type="number" id="sf-cost" placeholder="0.00" step="0.01"></div>
+        <div class="f w2">
+          <label>Фото товару (URL або файл)</label>
+          <div style="display:flex;gap:4px">
+            <input id="sf-img" placeholder="https://...">
+            <label class="btn btn-sec" style="padding:6px 8px;font-size:11px;cursor:pointer" title="Завантажити з пристрою">
+              📁
+              <input type="file" accept="image/*" style="display:none" onchange="handleImageFile(event, 'sf-img')">
+            </label>
+          </div>
+        </div>
+        <div class="f" style="min-width:140px">
+          <button class="btn btn-primary" style="width:100%" onclick="addDirectStockItem()">✓ Додати на склад</button>
+        </div>
+      </div>
     </div>
 
     <input type="text" class="search-input" id="search-stock" placeholder="🔍 Швидкий пошук товару на складі..." style="margin-bottom:10px" oninput="renderStock()">
@@ -162,7 +180,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
             <th>Собівартість / шт</th>
             <th style="text-align:center;width:150px">Фактичний залишок</th>
             <th>Сума на складі</th>
-            <th style="text-align:center">Журнал</th>
+            <th style="text-align:center">Дії</th>
           </tr>
         </thead>
         <tbody id="stock-desktop-body"></tbody>
@@ -607,6 +625,9 @@ function shipToUah(item) {
 }
 
 function calcUnitCost(item) {
+  if (item.directCostUah !== undefined) {
+    return parseFloat(item.directCostUah) || 0;
+  }
   const itemUah = (item.priceCny || 0) * (item.rateCny || 5.80);
   const totalShipUah = shipToUah(item);
   const shipPerUnit = (item.qty > 0) ? (totalShipUah / item.qty) : 0;
@@ -631,6 +652,47 @@ function formCalc() {
 
   const prevEl = document.getElementById("f-calc-preview");
   if (prevEl) prevEl.textContent = `Собівартість: ${unitCost.toFixed(2)} грн / шт`;
+}
+
+// ══════════════════════ ПРЯМЕ ДОДАВАННЯ НА СКЛАД (ВРУЧНУ) ══════════════════════
+function addDirectStockItem() {
+  const name = document.getElementById("sf-name").value.trim();
+  const stock = parseInt(document.getElementById("sf-stock").value) || 0;
+  const cost = parseFloat(document.getElementById("sf-cost").value) || 0;
+  const img = document.getElementById("sf-img").value.trim();
+
+  if (!name) { alert("Введіть назву товару!"); return; }
+
+  const history = [{
+    date: new Date().toLocaleString('uk-UA'),
+    user: localStorage.getItem("golda_last_user") || "Адмін",
+    action: "Оприбуткування",
+    change: `+${stock}`,
+    balance: stock,
+    comment: "Пряме додавання вручну на склад"
+  }];
+
+  orders.unshift({
+    id: Date.now(),
+    name,
+    stock,
+    directCostUah: cost,
+    img,
+    qty: stock,
+    status: 'received',
+    orderDate: new Date().toISOString().slice(0, 10),
+    history,
+    isArchived: false,
+    isDirectStock: true
+  });
+
+  cloudSave();
+
+  document.getElementById("sf-name").value = "";
+  document.getElementById("sf-stock").value = "1";
+  document.getElementById("sf-cost").value = "";
+  document.getElementById("sf-img").value = "";
+  alert("✓ Товар успішно додано на склад!");
 }
 
 function addOrder() {
@@ -1014,11 +1076,11 @@ function exportExcel() {
     "Трек": o.track || "",
     "К-сть замовлення": o.qty,
     "Залишок на складі": (o.stock !== undefined) ? o.stock : o.qty,
-    "Ціна ¥": o.priceCny,
-    "Курс ¥": o.rateCny,
-    "Доставка": o.shippingVal,
-    "Валюта доставки": o.shippingCur,
-    "Курс $": o.rateUsd,
+    "Ціна ¥": o.priceCny || "",
+    "Курс ¥": o.rateCny || "",
+    "Доставка": o.shippingVal || "",
+    "Валюта доставки": o.shippingCur || "",
+    "Курс $": o.rateUsd || "",
     "Собівартість шт (грн)": calcUnitCost(o).toFixed(2),
     "Статус": o.status,
     "ETA": o.eta || "",
@@ -1118,8 +1180,8 @@ function renderOrders() {
         <td>${trackHtml}</td>
         <td style="text-align:center"><b>${o.qty}</b></td>
         <td>
-          <div>${Number(o.priceCny||0).toFixed(1)} ¥</div>
-          <div style="font-size:10px;color:#8a96a3">курс: <b>${(o.rateCny||5.80).toFixed(2)}</b></div>
+          <div>${o.priceCny ? Number(o.priceCny).toFixed(1) + ' ¥' : '—'}</div>
+          <div style="font-size:10px;color:#8a96a3">${o.rateCny ? 'курс: <b>' + (o.rateCny).toFixed(2) + '</b>' : ''}</div>
         </td>
         <td>${o.shippingVal ? `${o.shippingVal} ${o.shippingCur==='USD'?'$':'грн'}` : '0.00'}</td>
         <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
@@ -1212,8 +1274,9 @@ function renderStock() {
           </div>
         </td>
         <td style="font-weight:700">${Math.round(totalStockWorth).toLocaleString('uk-UA')} грн</td>
-        <td style="text-align:center">
+        <td style="text-align:center;white-space:nowrap">
           <button class="btn" style="padding:2px 6px;font-size:11px;background:#f0f2f5" onclick="viewHistory(${o.id})" title="Історія списань">📜 Історія</button>
+          <button class="btn" style="padding:2px 5px;background:none;color:#e74c3c" onclick="deleteOrder(${o.id})" title="Видалити зі складу">🗑</button>
         </td>
       </tr>
     `;
@@ -1243,6 +1306,7 @@ function renderStock() {
             <div>
               <span style="font-size:11px;color:#6b7c93">Залишок:</span>
               <button class="btn" style="padding:1px 5px;font-size:10px;background:#f0f2f5;margin-left:4px" onclick="viewHistory(${o.id})">📜 Історія</button>
+              <button class="btn" style="padding:1px 5px;font-size:10px;background:#fdf0f0;color:#e74c3c;margin-left:2px" onclick="deleteOrder(${o.id})">🗑</button>
             </div>
             <div class="qty-ctrl">
               <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModal(${o.id}, 'sub')">−</button>
