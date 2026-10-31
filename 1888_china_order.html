@@ -93,7 +93,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
   .search-input{width:100%;margin-left:0}
 }
 
-#auth-overlay, #edit-modal, #img-modal, #stock-modal, #history-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999;padding:12px}
+#auth-overlay, #edit-modal, #img-modal, #stock-modal, #history-modal, #batches-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:9999;padding:12px}
 .modal-box{background:#fff;padding:16px;border-radius:8px;width:100%;max-width:580px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:92vh;overflow-y:auto}
 .auth-card{background:#fff;padding:24px;border-radius:8px;width:100%;max-width:320px;text-align:center}
 
@@ -144,7 +144,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
     </div>
   </div>
 
-  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ ══════════════════════ -->
+  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ (БЕЗ ДУБЛЮВАННЯ) ══════════════════════ -->
   <div id="view-stock">
     <div class="sec" style="background:#f4f9fd;border-color:#b8d9f0">
       <div class="st" style="color:#1a6fa8">➕ Додати товар напряму на склад (вручну)</div>
@@ -295,7 +295,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
 <div id="stock-modal">
   <div class="modal-box" style="max-width:380px">
     <div class="st" style="font-size:13px;color:#2c3e50" id="stock-modal-title">📦 Зміна залишку</div>
-    <input type="hidden" id="sm-order-id">
+    <input type="hidden" id="sm-item-name-input">
     <input type="hidden" id="sm-direction">
     
     <div style="font-size:12px;font-weight:700;margin-bottom:8px" id="sm-item-name"></div>
@@ -320,6 +320,17 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
       <button class="btn" style="padding:2px 6px;background:none;font-size:16px" onclick="closeHistoryModal()">×</button>
     </div>
     <div id="history-list-body" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ВІКНО ПЕРЕГЛЯДУ СОБІВАРТОСТЕЙ УСІХ ПАРТІЙ -->
+<div id="batches-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="st" style="font-size:13px;color:#2c3e50;margin:0">📊 Партії замовлень: <span id="batches-item-title"></span></div>
+      <button class="btn" style="padding:2px 6px;background:none;font-size:16px" onclick="closeBatchesModal()">×</button>
+    </div>
+    <div id="batches-list-body" style="max-height:60vh;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -783,13 +794,11 @@ function duplicateOrder(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function openStockModal(id, direction) {
-  const o = orders.find(x => x.id === id);
-  if (!o) return;
-
-  document.getElementById("sm-order-id").value = id;
+// ══════════════════════ СКЛАДОВИЙ ОБЛІК ПО УНІКАЛЬНИХ ТОВАРАХ ══════════════════════
+function openStockModalByName(itemName, direction) {
+  document.getElementById("sm-item-name-input").value = itemName;
   document.getElementById("sm-direction").value = direction;
-  document.getElementById("sm-item-name").textContent = o.name;
+  document.getElementById("sm-item-name").textContent = itemName;
   document.getElementById("sm-qty").value = 1;
   document.getElementById("sm-comment").value = "";
   
@@ -815,7 +824,7 @@ function closeStockModal() {
 }
 
 function submitStockChange() {
-  const id = parseInt(document.getElementById("sm-order-id").value);
+  const itemName = document.getElementById("sm-item-name-input").value.trim().toLowerCase();
   const direction = document.getElementById("sm-direction").value;
   const qty = parseInt(document.getElementById("sm-qty").value);
   const user = document.getElementById("sm-user").value.trim() || "Невідомий";
@@ -823,27 +832,35 @@ function submitStockChange() {
 
   if (isNaN(qty) || qty <= 0) { alert("Введіть коректну кількість!"); return; }
 
-  const o = orders.find(x => x.id === id);
-  if (!o) return;
+  // Знаходимо всі замовлення цього товару
+  const matchingOrders = orders.filter(o => (o.name || "").trim().toLowerCase() === itemName);
+  if (!matchingOrders.length) return;
 
-  const current = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
-  let newBalance = current;
+  // Рахуємо сумарний залишок
+  let totalStock = matchingOrders.reduce((sum, o) => {
+    return sum + ((o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0));
+  }, 0);
 
+  let newTotalStock = totalStock;
   if (direction === "sub") {
-    newBalance = Math.max(0, current - qty);
+    newTotalStock = Math.max(0, totalStock - qty);
   } else {
-    newBalance = current + qty;
+    newTotalStock = totalStock + qty;
   }
 
-  o.stock = newBalance;
-  if (!o.history) o.history = [];
+  // Прив'язуємо сумарний залишок до головного (першого) запису, решту обнуляємо
+  matchingOrders[0].stock = newTotalStock;
+  for (let i = 1; i < matchingOrders.length; i++) {
+    matchingOrders[i].stock = 0;
+  }
 
-  o.history.unshift({
+  if (!matchingOrders[0].history) matchingOrders[0].history = [];
+  matchingOrders[0].history.unshift({
     date: new Date().toLocaleString('uk-UA'),
     user,
     action: direction === "sub" ? "Списання" : "Надходження",
     change: direction === "sub" ? `-${qty}` : `+${qty}`,
-    balance: newBalance,
+    balance: newTotalStock,
     comment
   });
 
@@ -852,21 +869,30 @@ function submitStockChange() {
   cloudSave();
 }
 
-function viewHistory(id) {
-  const o = orders.find(x => x.id === id);
-  if (!o) return;
+function viewHistoryByName(itemName) {
+  const clean = itemName.trim().toLowerCase();
+  const matchingOrders = orders.filter(o => (o.name || "").trim().toLowerCase() === clean);
+  if (!matchingOrders.length) return;
 
-  document.getElementById("hist-item-title").textContent = o.name;
+  document.getElementById("hist-item-title").textContent = matchingOrders[0].name;
   const container = document.getElementById("history-list-body");
 
-  if (!o.history || !o.history.length) {
+  // Збираємо історію з усіх записів цього товару
+  let combinedHistory = [];
+  matchingOrders.forEach(o => {
+    if (o.history && o.history.length) {
+      combinedHistory = combinedHistory.concat(o.history);
+    }
+  });
+
+  if (!combinedHistory.length) {
     container.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px">Історії змін ще немає</div>';
   } else {
-    container.innerHTML = o.history.map(h => `
-      <div class="hist-item" style="border-left-color:${h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">
+    container.innerHTML = combinedHistory.map(h => `
+      <div class="hist-item" style="border-left-color:${h.change && h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">
         <div class="hist-date">${h.date} · <b>${h.user}</b></div>
         <div style="font-size:12px;font-weight:700;margin:2px 0">
-          ${h.action}: <span style="color:${h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">${h.change} шт</span> (Залишок: ${h.balance} шт)
+          ${h.action}: <span style="color:${h.change && h.change.startsWith('-') ? '#e74c3c' : '#27ae60'}">${h.change} шт</span> (Залишок: ${h.balance} шт)
         </div>
         ${h.comment ? `<div style="color:#6b7c93;font-style:italic">"${h.comment}"</div>` : ''}
       </div>
@@ -878,6 +904,51 @@ function viewHistory(id) {
 
 function closeHistoryModal() {
   document.getElementById("history-modal").style.display = "none";
+}
+
+// Перегляд усіх партій конкретного товару
+function viewBatchesByName(itemName) {
+  const clean = itemName.trim().toLowerCase();
+  const matchingOrders = orders.filter(o => (o.name || "").trim().toLowerCase() === clean);
+  if (!matchingOrders.length) return;
+
+  document.getElementById("batches-item-title").textContent = matchingOrders[0].name;
+  const container = document.getElementById("batches-list-body");
+
+  container.innerHTML = matchingOrders.map((o, idx) => {
+    const cost = calcUnitCost(o);
+    const statusMap = {
+      'ordered': '🟡 Замовлено',
+      'wh-cn': '🟠 Склад CN',
+      'transit': '🔵 В дорозі',
+      'received': '🟢 Отримано'
+    };
+    return `
+      <div style="background:#f8fafd;border:1px solid #dde2ea;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <b>Партія #${matchingOrders.length - idx} (${o.orderDate || 'без дати'})</b>
+          <span style="font-weight:700;color:#1a6fa8">${cost.toFixed(2)} грн / шт</span>
+        </div>
+        <div style="color:#6b7c93">
+          Кількість: <b>${o.qty} шт</b> · Статус: <b>${statusMap[o.status] || o.status}</b>
+          ${o.track ? ` · Трек: <span style="font-family:monospace">${o.track}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById("batches-modal").style.display = "flex";
+}
+
+function closeBatchesModal() {
+  document.getElementById("batches-modal").style.display = "none";
+}
+
+function deleteItemEverywhere(itemName) {
+  if (!confirm(`Видалити товар «${itemName}» та всі його замовлення?`)) return;
+  const clean = itemName.trim().toLowerCase();
+  orders = orders.filter(o => (o.name || "").trim().toLowerCase() !== clean);
+  cloudSave();
 }
 
 function formatShortDate(dStr) {
@@ -989,7 +1060,7 @@ function toggleArchive(id) {
 }
 
 function deleteOrder(id) {
-  if (!confirm("Видалити позицію?")) return;
+  if (!confirm("Видалити партію?")) return;
   orders = orders.filter(o => o.id !== id);
   cloudSave();
 }
@@ -1127,8 +1198,6 @@ function updateAnalytics() {
 
   const ordersBadge = document.getElementById("orders-badge");
   if (ordersBadge) ordersBadge.textContent = active.length;
-  const stockBadge = document.getElementById("stock-badge");
-  if (stockBadge) stockBadge.textContent = orders.filter(o => (o.stock || 0) > 0).length;
 }
 
 function renderOrders() {
@@ -1232,6 +1301,7 @@ function renderOrders() {
   }).join('');
 }
 
+// ══════════════════════ РЕНДЕР СКЛАДУ (ГРУПУВАННЯ ДУБЛІВ В ОДНУ КАРТКУ) ══════════════════════
 function renderStock() {
   const desktopTbody = document.getElementById("stock-desktop-body");
   const mobileContainer = document.getElementById("stock-mobile-body");
@@ -1239,24 +1309,52 @@ function renderStock() {
 
   const q = (document.getElementById("search-stock")?.value || "").toLowerCase().trim();
 
-  let stockItems = orders.filter(o => {
-    if (q && !(o.name||"").toLowerCase().includes(q)) return false;
-    return true;
+  // Групуємо всі товари за унікальною назвою
+  const groupedStock = {};
+
+  orders.forEach(o => {
+    const rawName = (o.name || "").trim();
+    if (!rawName) return;
+    const cleanKey = rawName.toLowerCase();
+
+    if (q && !cleanKey.includes(q)) return;
+
+    if (!groupedStock[cleanKey]) {
+      groupedStock[cleanKey] = {
+        name: rawName,
+        img: o.img || "",
+        totalStock: 0,
+        items: []
+      };
+    }
+
+    if (o.img && !groupedStock[cleanKey].img) {
+      groupedStock[cleanKey].img = o.img;
+    }
+
+    const currentStock = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
+    groupedStock[cleanKey].totalStock += currentStock;
+    groupedStock[cleanKey].items.push(o);
   });
 
-  if (!stockItems.length) {
+  const stockList = Object.values(groupedStock);
+  const stockBadge = document.getElementById("stock-badge");
+  if (stockBadge) stockBadge.textContent = stockList.filter(s => s.totalStock > 0).length;
+
+  if (!stockList.length) {
     desktopTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:25px;color:#aaa">Склад порожній</td></tr>';
     mobileContainer.innerHTML = '<div style="text-align:center;padding:25px;color:#aaa">Склад порожній</div>';
     return;
   }
 
-  desktopTbody.innerHTML = stockItems.map(o => {
-    const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
-    const unitCost = calcUnitCost(o);
+  desktopTbody.innerHTML = stockList.map(group => {
+    const stockVal = group.totalStock;
+    const latestItem = group.items[0];
+    const unitCost = calcUnitCost(latestItem);
     const totalStockWorth = stockVal * unitCost;
-    const imgHtml = o.img ? `<img src="${o.img}" style="width:40px;height:40px;object-fit:cover;border-radius:4px" onclick="viewImage('${o.img}')">` : `📷`;
+    const imgHtml = group.img ? `<img src="${group.img}" style="width:40px;height:40px;object-fit:cover;border-radius:4px" onclick="viewImage('${group.img}')">` : `📷`;
 
-    const batches = getTransitBatchesForItem(o.name);
+    const batches = getTransitBatchesForItem(group.name);
     let transitHtml = '<span style="color:#ccc;font-size:11px">—</span>';
     if (batches.length) {
       transitHtml = `<div class="transit-batches">` + 
@@ -1264,37 +1362,46 @@ function renderStock() {
         `</div>`;
     }
 
+    // Безпечне екранування назви для виклику функцій
+    const safeName = group.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
     return `
       <tr style="${stockVal <= 2 ? 'background:#fff8f8' : ''}">
         <td style="text-align:center">${imgHtml}</td>
         <td>
-          <b>${o.name}</b>
+          <b>${group.name}</b>
           ${stockVal <= 2 ? '<span style="color:#e74c3c;font-size:10px;margin-left:6px;font-weight:700">⚠️ Закінчується!</span>' : ''}
         </td>
         <td>${transitHtml}</td>
-        <td style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span style="color:#1a6fa8;font-weight:700">${unitCost.toFixed(2)} грн</span>
+            <button class="btn btn-sec" style="padding:1px 5px;font-size:10px" onclick="viewBatchesByName('${safeName}')" title="Показати собівартість усіх партій">📊 Партії (${group.items.length})</button>
+          </div>
+        </td>
         <td style="text-align:center">
           <div class="qty-ctrl">
-            <button class="btn-qty" onclick="openStockModal(${o.id}, 'sub')">−</button>
+            <button class="btn-qty" onclick="openStockModalByName('${safeName}', 'sub')">−</button>
             <span class="qty-val">${stockVal}</span>
-            <button class="btn-qty" onclick="openStockModal(${o.id}, 'add')">+</button>
+            <button class="btn-qty" onclick="openStockModalByName('${safeName}', 'add')">+</button>
           </div>
         </td>
         <td style="font-weight:700">${Math.round(totalStockWorth).toLocaleString('uk-UA')} грн</td>
         <td style="text-align:center;white-space:nowrap">
-          <button class="btn" style="padding:2px 6px;font-size:11px;background:#f0f2f5" onclick="viewHistory(${o.id})" title="Історія списань">📜 Історія</button>
-          <button class="btn" style="padding:2px 5px;background:none;color:#e74c3c" onclick="deleteOrder(${o.id})" title="Видалити зі складу">🗑</button>
+          <button class="btn" style="padding:2px 6px;font-size:11px;background:#f0f2f5" onclick="viewHistoryByName('${safeName}')" title="Історія списань">📜 Історія</button>
+          <button class="btn" style="padding:2px 5px;background:none;color:#e74c3c" onclick="deleteItemEverywhere('${safeName}')" title="Видалити зі складу">🗑</button>
         </td>
       </tr>
     `;
   }).join('');
 
-  mobileContainer.innerHTML = stockItems.map(o => {
-    const stockVal = (o.stock !== undefined) ? o.stock : (o.status === "received" ? o.qty : 0);
-    const unitCost = calcUnitCost(o);
-    const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
+  mobileContainer.innerHTML = stockList.map(group => {
+    const stockVal = group.totalStock;
+    const latestItem = group.items[0];
+    const unitCost = calcUnitCost(latestItem);
+    const imgHtml = group.img ? `<img src="${group.img}" class="m-card-img" onclick="viewImage('${group.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
 
-    const batches = getTransitBatchesForItem(o.name);
+    const batches = getTransitBatchesForItem(group.name);
     let transitHtml = '';
     if (batches.length) {
       transitHtml = `<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">` +
@@ -1302,23 +1409,28 @@ function renderStock() {
         `</div>`;
     }
 
+    const safeName = group.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
     return `
       <div class="m-card" style="${stockVal <= 2 ? 'border-color:#f5c6cb;background:#fffdfd' : ''}">
         ${imgHtml}
         <div class="m-card-body">
-          <div class="m-card-title">${o.name}</div>
+          <div class="m-card-title">${group.name}</div>
           ${transitHtml}
-          <div style="font-size:11px;color:#8a96a3;margin:4px 0">Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн / шт</b></div>
+          <div style="font-size:11px;color:#8a96a3;margin:4px 0;display:flex;align-items:center;gap:6px">
+            <span>Собівартість: <b style="color:#1a6fa8">${unitCost.toFixed(1)} грн</b></span>
+            <button class="btn btn-sec" style="padding:1px 5px;font-size:10px" onclick="viewBatchesByName('${safeName}')">📊 Партії (${group.items.length})</button>
+          </div>
           <div class="m-card-row">
             <div>
               <span style="font-size:11px;color:#6b7c93">Залишок:</span>
-              <button class="btn" style="padding:1px 5px;font-size:10px;background:#f0f2f5;margin-left:4px" onclick="viewHistory(${o.id})">📜 Історія</button>
-              <button class="btn" style="padding:1px 5px;font-size:10px;background:#fdf0f0;color:#e74c3c;margin-left:2px" onclick="deleteOrder(${o.id})">🗑</button>
+              <button class="btn" style="padding:1px 5px;font-size:10px;background:#f0f2f5;margin-left:4px" onclick="viewHistoryByName('${safeName}')">📜 Історія</button>
+              <button class="btn" style="padding:1px 5px;font-size:10px;background:#fdf0f0;color:#e74c3c;margin-left:2px" onclick="deleteItemEverywhere('${safeName}')">🗑</button>
             </div>
             <div class="qty-ctrl">
-              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModal(${o.id}, 'sub')">−</button>
+              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModalByName('${safeName}', 'sub')">−</button>
               <span class="qty-val" style="min-width:38px;font-size:15px">${stockVal}</span>
-              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModal(${o.id}, 'add')">+</button>
+              <button class="btn-qty" style="width:36px;height:34px;font-size:18px" onclick="openStockModalByName('${safeName}', 'add')">+</button>
             </div>
           </div>
         </div>
@@ -1332,7 +1444,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const orderDateEl = document.getElementById("f-order-date");
   if (orderDateEl) orderDateEl.value = new Date().toISOString().slice(0, 10);
   
-  // Автопідстановка даних із закладки Bookmarklet
   const params = new URLSearchParams(window.location.search);
   if (params.get("name")) {
     switchView('orders');
