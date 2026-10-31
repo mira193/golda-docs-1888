@@ -144,7 +144,7 @@ table.orders-tbl td{padding:8px 6px;border-bottom:1px solid #edf1f5;vertical-ali
     </div>
   </div>
 
-  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ (ПЕРЕДНЯ ВКЛАДКА) ══════════════════════ -->
+  <!-- ══════════════════════ РОЗДІЛ 1: СКЛАД ТА ЗАЛИШКИ ══════════════════════ -->
   <div id="view-stock">
     <div class="sec" style="background:#f4f9fd;border-color:#b8d9f0">
       <div class="st" style="color:#1a6fa8">➕ Додати товар напряму на склад (вручну)</div>
@@ -1200,7 +1200,6 @@ function renderOrders() {
     const unitCost = calcUnitCost(o);
     const imgHtml = o.img ? `<img src="${o.img}" class="m-card-img" onclick="viewImage('${o.img}')">` : `<div class="m-card-img" style="display:flex;align-items:center;justify-content:center;background:#eee;color:#aaa">📷</div>`;
 
-    // Дата ETA в мобільній картці
     const etaBadge = (o.status !== 'received' && o.eta) 
       ? `<span class="badge-eta">📅 ETA: ${o.eta}</span>` 
       : '';
@@ -1328,9 +1327,30 @@ function renderStock() {
   }).join('');
 }
 
+// ══════════════════════ СТАРТ ТА ПЕРЕХОПЛЕННЯ З БУКМАРКЛЕТА ══════════════════════
 window.addEventListener("DOMContentLoaded", () => {
   const orderDateEl = document.getElementById("f-order-date");
   if (orderDateEl) orderDateEl.value = new Date().toISOString().slice(0, 10);
+  
+  // Автопідстановка даних із закладки Bookmarklet
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("name")) {
+    switchView('orders');
+    
+    const nameEl = document.getElementById("f-name");
+    const priceEl = document.getElementById("f-price-cny");
+    const imgEl = document.getElementById("f-img");
+    const linkEl = document.getElementById("f-link");
+    const trackEl = document.getElementById("f-track");
+
+    if (nameEl) nameEl.value = params.get("name") || "";
+    if (priceEl) priceEl.value = params.get("price") || "";
+    if (imgEl) imgEl.value = params.get("img") || "";
+    if (linkEl) linkEl.value = params.get("link") || "";
+    
+    if (trackEl) trackEl.focus();
+  }
+
   checkSavedAuth();
   fetchNbuRates();
   formCalc();
